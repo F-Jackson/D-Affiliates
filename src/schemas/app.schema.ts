@@ -85,11 +85,8 @@ class Transfer {
   @Prop({ type: Date })
   completedDate?: Date;
 
-  @Prop({ type: String })
-  bankAccountHash?: string;
-
-  @Prop({ type: String })
-  walletAddress?: string;
+    @Prop({ type: String })
+    details?: string;
 }
 
 export const TransferSchema = SchemaFactory.createForClass(Transfer);

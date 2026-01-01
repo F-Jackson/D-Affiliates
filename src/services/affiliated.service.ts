@@ -17,5 +17,20 @@ export class AffiliatedService {
     async syncAffiliate(userId: string, affiliateCode: string): Promise<void> {
     }
 
-    async 
+    async syncTransfers(userId: string): Promise<void> {
+        // Logic to sync transfer data for the affiliated user
+    }
+
+    async makeContract(userId: string, paymentMethod: {
+        type: 'bank_transfer' | 'paypal' | 'crypto';
+        details: string;
+    }): Promise<void> {
+        // Logic to create a contract for the affiliated user
+    }
+
+    async confirmContract(userId: string, code: string): Promise<void> {
+        // Logic to confirm a contract for the affiliated user
+    }
+
+
 }
