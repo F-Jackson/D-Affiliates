@@ -49,12 +49,8 @@ export class AffiliatedService {
         userId,
         affiliateCode,
         status: 'active',
-        kycVerified: false,
-        fraudSuspected: false,
         affiliateds: [],
         transfers: [],
-        totalTransactions: 0,
-        createdAt: new Date(),
       });
 
       const savedUser = await newUser.save();
@@ -397,15 +393,8 @@ export class AffiliatedService {
     }
   }
 
-  /**
-   * Métodos auxiliares
-   */
-
-  /**
-   * Gera um código de afiliado único
-   */
   private generateAffiliateCode(): string {
-    return 'AFF_' + crypto.randomBytes(8).toString('hex').toUpperCase();
+    return 'AFF_' + crypto.randomBytes(12).toString('hex').toUpperCase();
   }
 
   /**
