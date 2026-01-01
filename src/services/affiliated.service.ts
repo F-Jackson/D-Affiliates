@@ -147,9 +147,13 @@ export class AffiliatedService {
       const transactions = await this.fetchExternalTransactions(affiliateds);
 
       transactions.forEach((tx) => {
-        const affiliated = user.affiliateds.find((aff) => aff.userId === tx.affiliateId);
+        const affiliated = user.affiliateds.find(
+          (aff) => aff.userId === tx.affiliateId,
+        );
         if (affiliated) {
-          const existingTx = affiliated.transactions.find((t) => t.id === tx.id);
+          const existingTx = affiliated.transactions.find(
+            (t) => t.id === tx.id,
+          );
           if (!existingTx) {
             affiliated.transactions.push({
               id: tx.id,
@@ -181,9 +185,6 @@ export class AffiliatedService {
     }
   }
 
-  /**
-   * Cria um contrato com método de pagamento
-   */
   async makeContract(
     userId: string,
     paymentMethod: PaymentMethod,

@@ -137,6 +137,13 @@ export class User {
   @Prop({ type: [TransferSchema], default: [] })
   transfers: Transfer[];
 
+  @Prop({
+    type: String,
+    enum: ['syncing', 'completed', 'failed', 'pending'],
+    default: 'pending',
+  })
+  paymentStatus: 'syncing' | 'completed' | 'failed' | 'pending';
+
   @Prop({ type: Date })
   lastActivityDate?: Date;
 
