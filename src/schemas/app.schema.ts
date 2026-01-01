@@ -137,21 +137,6 @@ export class User {
   })
   status: string;
 
-  @Prop({ type: Boolean, default: false })
-  kycVerified: boolean;
-
-  @Prop({ type: Date })
-  kycVerifiedAt?: Date;
-
-  @Prop({ type: String })
-  documentHash?: string;
-
-  @Prop({ type: Boolean, default: false })
-  fraudSuspected: boolean;
-
-  @Prop({ type: String })
-  fraudReason?: string;
-
   @Prop({ type: [AffiliatedSchema], default: [] })
   affiliateds: Affiliated[];
 
