@@ -1,6 +1,6 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-@Schema({ timestamps: true, collection: "affiliates" })
+@Schema({ timestamps: true, collection: 'affiliates' })
 export class UserSchema {
   @Prop({ required: true, index: true })
   userId: string;
@@ -8,7 +8,21 @@ export class UserSchema {
   @Prop({ type: String, required: true })
   affiliateCode: string;
 
-  
+  affiliateds: {
+    userId: string;
+    transactions: {
+      amount: number;
+      id: string;
+      date: Date;
+    }[];
+  }[];
+
+  transfers: {
+    amount: number;
+    date: Date;
+    status: 'pending' | 'completed' | 'failed';
+    pdfUrl?: string;
+  }[];
 
   @Prop({ required: true, default: Date.now })
   createdAt: Date;
