@@ -22,6 +22,25 @@ class Transaction {
 
   @Prop({ type: Number, min: 0, max: 1, default: 0.1 })
   commissionRate: number;
+
+  @Prop({ type: String })
+  description?: string;
+
+  @Prop({
+    type: String,
+    enum: ['pending', 'approved', 'rejected', 'under_review', 'reversed'],
+    default: 'pending',
+  })
+  status: string;
+
+  @Prop({ type: String })
+  rejectionReason?: string;
+
+  @Prop({ type: String })
+  transactionId?: string;
+
+  @Prop({ type: Boolean, default: false })
+  isVerified: boolean;
 }
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);
@@ -40,7 +59,7 @@ class Affiliated {
 
 export const AffiliatedSchema = SchemaFactory.createForClass(Affiliated);
 
-@Schema({ _id: false })
+@Schema({ timestamps: true })
 class Transfer {
   @Prop({ required: true, type: Number, min: 0.01 })
   amount: number;
@@ -59,6 +78,18 @@ class Transfer {
 
   @Prop({ type: String })
   paymentProofUrl?: string;
+
+  @Prop({ type: String })
+  failureReason?: string;
+
+  @Prop({ type: Date })
+  completedDate?: Date;
+
+  @Prop({ type: String })
+  bankAccountHash?: string;
+
+  @Prop({ type: String })
+  walletAddress?: string;
 }
 
 export const TransferSchema = SchemaFactory.createForClass(Transfer);
@@ -76,11 +107,39 @@ export class User {
   })
   affiliateCode: string;
 
+  @Prop({
+    type: String,
+    enum: ['active', 'suspended', 'inactive', 'banned'],
+    default: 'active',
+  })
+  status: string;
+
+  @Prop({ type: Boolean, default: false })
+  kycVerified: boolean;
+
+  @Prop({ type: Date })
+  kycVerifiedAt?: Date;
+
+  @Prop({ type: String })
+  documentHash?: string;
+
+  @Prop({ type: Boolean, default: false })
+  fraudSuspected: boolean;
+
+  @Prop({ type: String })
+  fraudReason?: string;
+
   @Prop({ type: [AffiliatedSchema], default: [] })
   affiliateds: Affiliated[];
 
   @Prop({ type: [TransferSchema], default: [] })
   transfers: Transfer[];
+
+  @Prop({ type: Date })
+  lastActivityDate?: Date;
+
+  @Prop({ type: Number, default: 0 })
+  totalTransactions: number;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
