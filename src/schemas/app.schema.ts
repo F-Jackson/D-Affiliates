@@ -142,7 +142,7 @@ export class User {
     enum: ['syncing', 'completed', 'failed', 'pending'],
     default: 'pending',
   })
-  paymentStatus: 'syncing' | 'completed' | 'failed' | 'pending';
+  transferSyncStatus: 'syncing' | 'completed' | 'failed' | 'pending';
 
   @Prop({ type: Date })
   lastActivityDate?: Date;

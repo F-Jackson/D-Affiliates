@@ -142,6 +142,9 @@ export class AffiliatedService {
         throw new NotFoundException(`Usuário ${userId} não encontrado`);
       }
 
+      user.transferSyncStatus = 'syncing';
+      await user.save();
+
       const affiliateds = user.affiliateds.map((aff) => aff.userId);
 
       const transactions = await this.fetchExternalTransactions(affiliateds);
@@ -172,6 +175,7 @@ export class AffiliatedService {
       });
 
       user.lastActivityDate = new Date();
+      user.transferSyncStatus = 'completed';
       const savedUser = await user.save();
 
       this.logger.log(`Transferências sincronizadas para ${userId}`);
@@ -181,6 +185,10 @@ export class AffiliatedService {
         `Erro ao sincronizar transferências de ${userId}:`,
         error.message,
       );
+
+      user.transferSyncStatus = 'failed';
+      await user.save();
+
       throw error;
     }
   }
