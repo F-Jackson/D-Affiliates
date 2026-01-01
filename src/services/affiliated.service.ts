@@ -3,7 +3,6 @@ import {
   BadRequestException,
   NotFoundException,
   ConflictException,
-  InternalServerErrorException,
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -12,14 +11,6 @@ import { Model } from 'mongoose';
 import * as crypto from 'crypto';
 import { User, UserDocument } from '../schemas/app.schema';
 
-interface TransactionInput {
-  id: string;
-  amount: number;
-  productName: string;
-  commissionRate?: number;
-  description?: string;
-  externalTransactionId?: string;
-}
 
 interface PaymentMethod {
   type: 'bank_transfer' | 'paypal' | 'crypto';
@@ -225,9 +216,9 @@ export class AffiliatedService {
         );
       }
 
-      if (!user.kycVerified) {
-        throw new BadRequestException(
-          'KYC deve estar verificado para fazer contrato',
+      if (user.status=== 'suspended') {
+        throw new UnauthorizedException(
+          'Usuário suspenso não pode fazer contrato',
         );
       }
 
