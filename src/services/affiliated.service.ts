@@ -62,9 +62,6 @@ export class AffiliatedService {
     }
   }
 
-  /**
-   * Obtém estatísticas do afiliado
-   */
   async getAffiliatedStats(userId: string): Promise<any> {
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId é obrigatório');
@@ -82,12 +79,9 @@ export class AffiliatedService {
         userId,
         affiliateCode: user.affiliateCode,
         status: user.status,
-        kycVerified: user.kycVerified,
-        fraudSuspected: user.fraudSuspected,
         stats,
         numberOfAffiliates: user.affiliateds.length,
         totalTransfers: user.transfers.length,
-        createdAt: user.createdAt,
         lastActivityDate: user.lastActivityDate,
       };
     } catch (error) {
@@ -99,9 +93,6 @@ export class AffiliatedService {
     }
   }
 
-  /**
-   * Sincroniza dados do afiliado
-   */
   async syncAffiliate(userId: string, affiliateCode: string): Promise<void> {
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId é obrigatório');
