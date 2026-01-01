@@ -3,13 +3,12 @@ import { Document, Types } from 'mongoose';
 
 export type UserDocument = User & Document;
 
-// Subdocumento de transação
 @Schema({ timestamps: true })
 class Transaction {
-  @Prop({ required: true })
+  @Prop({ required: true, type: String })
   id: string;
 
-  @Prop({ required: true, min: 0 })
+  @Prop({ required: true, type: Number, min: 0.01 })
   amount: number;
 
   @Prop({ required: true, type: Date })
@@ -17,14 +16,19 @@ class Transaction {
 
   @Prop({ type: String })
   paymentProofUrl?: string;
+
+  @Prop({ required: true, type: String })
+  productName: string;
+
+  @Prop({ type: Number, min: 0, max: 1, default: 0.1 })
+  commissionRate: number;
 }
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);
 
-// Subdocumento de afiliado
 @Schema({ timestamps: true })
 class Affiliated {
-  @Prop({ required: true })
+  @Prop({ required: true, type: String, minlength: 1 })
   userId: string;
 
   @Prop({ type: [TransactionSchema], default: [] })
@@ -36,10 +40,9 @@ class Affiliated {
 
 export const AffiliatedSchema = SchemaFactory.createForClass(Affiliated);
 
-// Subdocumento de transferência
 @Schema({ _id: false })
 class Transfer {
-  @Prop({ required: true, min: 0 })
+  @Prop({ required: true, type: Number, min: 0.01 })
   amount: number;
 
   @Prop({ required: true, type: Date })
@@ -60,13 +63,17 @@ class Transfer {
 
 export const TransferSchema = SchemaFactory.createForClass(Transfer);
 
-// Schema principal
 @Schema({ timestamps: true, collection: 'affiliates' })
 export class User {
-  @Prop({ required: true, unique: true, index: true })
+  @Prop({ required: true, unique: true, index: true, type: String })
   userId: string;
 
-  @Prop({ required: true, unique: true })
+  @Prop({
+    required: true,
+    unique: true,
+    type: String,
+    match: /^[a-zA-Z0-9_-]+$/,
+  })
   affiliateCode: string;
 
   @Prop({ type: [AffiliatedSchema], default: [] })
@@ -74,19 +81,33 @@ export class User {
 
   @Prop({ type: [TransferSchema], default: [] })
   transfers: Transfer[];
-
-  stats: {
-    totalEarnings: number;
-    totalWithdrawn: number;
-    pendingWithdrawals: number;
-    numberOfAffiliates: number;
-  };
-
-  @Prop({ default: Date.now })
-  createdAt: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
 
-// Índice composto opcional para consultas rápidas por afiliado e transações
+UserSchema.set('versionKey', 'version');
+UserSchema.set('toJSON', { virtuals: true });
+
+UserSchema.virtual('stats').get(function (this: UserDocument) {
+  const totalEarnings = this.affiliateds.reduce(
+    (sum, aff) => sum + aff.transactions.reduce((s, t) => s + t.amount, 0),
+    0,
+  );
+  const totalWithdrawn = this.transfers
+    .filter((t) => t.status === 'completed')
+    .reduce((sum, t) => sum + t.amount, 0);
+  const pendingWithdrawals = this.transfers
+    .filter((t) => t.status === 'pending')
+    .reduce((sum, t) => sum + t.amount, 0);
+  const numberOfAffiliates = this.affiliateds.length;
+  return {
+    totalEarnings,
+    totalWithdrawn,
+    pendingWithdrawals,
+    numberOfAffiliates,
+  };
+});
+
+UserSchema.index({ affiliateCode: 1 });
+UserSchema.index({ status: 1 });
 UserSchema.index({ 'affiliateds.userId': 1 });
