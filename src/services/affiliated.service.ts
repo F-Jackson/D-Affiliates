@@ -131,9 +131,6 @@ export class AffiliatedService {
     }
   }
 
-  /**
-   * Sincroniza transferências
-   */
   async syncTransfers(userId: string): Promise<UserDocument> {
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId é obrigatório');
@@ -145,16 +142,30 @@ export class AffiliatedService {
         throw new NotFoundException(`Usuário ${userId} não encontrado`);
       }
 
-      // Validar status de transferências pendentes
-      for (const transfer of user.transfers) {
-        if (transfer.status === 'pending') {
-          // Aqui você pode adicionar lógica para verificar status com API externa
-          // Por enquanto, apenas atualizar a data
-          if (!transfer.date) {
-            transfer.date = new Date();
+      const affiliateds = user.affiliateds.map((aff) => aff.userId);
+
+      const transactions = await this.fetchExternalTransactions(affiliateds);
+
+      transactions.forEach((tx) => {
+        const affiliated = user.affiliateds.find((aff) => aff.userId === tx.affiliateId);
+        if (affiliated) {
+          const existingTx = affiliated.transactions.find((t) => t.id === tx.id);
+          if (!existingTx) {
+            affiliated.transactions.push({
+              id: tx.id,
+              amount: tx.amount,
+              productName: tx.productName,
+              commissionRate: tx.commissionRate || 0,
+              description: tx.description || '',
+              transactionId: tx.externalTransactionId || '',
+              status: tx.status || 'pending',
+              isVerified: false,
+              paymentProofUrl: tx.paymentProofUrl || '',
+              date: new Date(),
+            });
           }
         }
-      }
+      });
 
       user.lastActivityDate = new Date();
       const savedUser = await user.save();

@@ -34,9 +34,6 @@ class Transaction {
   status: string;
 
   @Prop({ type: String })
-  rejectionReason?: string;
-
-  @Prop({ type: String })
   transactionId?: string;
 
   @Prop({ type: Boolean, default: false })
