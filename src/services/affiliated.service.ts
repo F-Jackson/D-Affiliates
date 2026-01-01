@@ -103,16 +103,13 @@ export class AffiliatedService {
     }
 
     try {
-      const user = await this.userModel.findOne({ userId });
+      const user = await this.userModel.findOne({ affiliateCode });
       if (!user) {
         throw new NotFoundException(`Usuário ${userId} não encontrado`);
       }
 
-      if (user.affiliateCode !== affiliateCode) {
-        throw new UnauthorizedException('Código de afiliado inválido');
-      }
-
       user.lastActivityDate = new Date();
+      user.affiliateds.push({ userId, transactions: [] });
       await user.save();
 
       this.logger.log(`Afiliado ${userId} sincronizado`);
