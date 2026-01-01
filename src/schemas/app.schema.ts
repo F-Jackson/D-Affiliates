@@ -94,6 +94,29 @@ class Transfer {
 
 export const TransferSchema = SchemaFactory.createForClass(Transfer);
 
+@Schema({ timestamps: true })
+export class Stats {
+  @Prop({ type: Number, default: 0 })
+  totalEarnings?: number;
+
+  @Prop({ type: Number, default: 0 })
+  totalWithdrawn?: number;
+
+  @Prop({ type: Number, default: 0 })
+  pendingWithdrawals?: number;
+
+  @Prop({ type: Number, default: 0 })
+  numberOfAffiliates?: number;
+
+  @Prop({ type: Number })
+  totalEarningsLastMonth?: number;
+
+  @Prop({ type: Number })
+  totalTransactionsLastMonth?: number;
+}
+
+export const StatsSchema = SchemaFactory.createForClass(Stats);
+
 @Schema({ timestamps: true, collection: 'affiliates' })
 export class User {
   @Prop({ required: true, unique: true, index: true, type: String })
@@ -138,8 +161,8 @@ export class User {
   @Prop({ type: Date })
   lastActivityDate?: Date;
 
-  @Prop({ type: Number, default: 0 })
-  totalTransactions: number;
+  @Prop({ type: StatsSchema, default: () => ({}) })
+  stats: Stats;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
