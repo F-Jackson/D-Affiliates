@@ -161,8 +161,8 @@ export class User {
   @Prop({ type: Date })
   lastActivityDate?: Date;
 
-  @Prop({ type: StatsSchema, default: () => ({}) })
-  stats: Stats;
+  @Prop({ type: StatsSchema })
+  stats?: Stats;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
