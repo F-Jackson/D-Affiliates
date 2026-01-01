@@ -4,7 +4,7 @@ import { Document, Types } from 'mongoose';
 export type UserDocument = User & Document;
 
 // Subdocumento de transação
-@Schema({ _id: false })
+@Schema({ timestamps: true })
 class Transaction {
   @Prop({ required: true })
   id: string;
@@ -14,18 +14,24 @@ class Transaction {
 
   @Prop({ required: true, type: Date })
   date: Date;
+
+  @Prop({ type: String })
+  paymentProofUrl?: string;
 }
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);
 
 // Subdocumento de afiliado
-@Schema({ _id: false })
+@Schema({ timestamps: true })
 class Affiliated {
   @Prop({ required: true })
   userId: string;
 
   @Prop({ type: [TransactionSchema], default: [] })
   transactions: Transaction[];
+
+  @Prop({ type: Date })
+  firstTransactionDate?: Date;
 }
 
 export const AffiliatedSchema = SchemaFactory.createForClass(Affiliated);
@@ -48,12 +54,8 @@ class Transfer {
   @Prop({ enum: ['bank_transfer', 'paypal', 'crypto'] })
   paymentMethod?: 'bank_transfer' | 'paypal' | 'crypto';
 
-
-    @Prop({ type: String })
+  @Prop({ type: String })
   paymentProofUrl?: string;
-
-
-  
 }
 
 export const TransferSchema = SchemaFactory.createForClass(Transfer);
@@ -72,6 +74,13 @@ export class User {
 
   @Prop({ type: [TransferSchema], default: [] })
   transfers: Transfer[];
+
+  stats: {
+    totalEarnings: number;
+    totalWithdrawn: number;
+    pendingWithdrawals: number;
+    numberOfAffiliates: number;
+  };
 
   @Prop({ default: Date.now })
   createdAt: Date;
