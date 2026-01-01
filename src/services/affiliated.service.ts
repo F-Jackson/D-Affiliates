@@ -1,36 +1,426 @@
-import { Injectable } from "@nestjs/common";
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  ConflictException,
+  InternalServerErrorException,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import * as crypto from 'crypto';
+import { User, UserDocument } from '../schemas/app.schema';
+
+interface TransactionInput {
+  id: string;
+  amount: number;
+  productName: string;
+  commissionRate?: number;
+  description?: string;
+  externalTransactionId?: string;
+}
+
+interface PaymentMethod {
+  type: 'bank_transfer' | 'paypal' | 'crypto';
+  details: string;
+}
 
 @Injectable()
 export class AffiliatedService {
-    async registerUser(userId: string): Promise<void> {
-        // Logic to register a new affiliated user
+  private readonly logger = new Logger(AffiliatedService.name);
+
+  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+
+  async registerUser(userId: string): Promise<UserDocument> {
+    if (!userId || userId.trim().length === 0) {
+      throw new BadRequestException('userId é obrigatório');
     }
 
-    async recordTransactions(userId: string, transactionsData: any[]): Promise<void> {
-        // Logic to record a new transaction for the affiliated user
+    try {
+      const existingUser = await this.userModel.findOne({ userId });
+      if (existingUser) {
+        throw new ConflictException('Usuário já está registrado');
+      }
+
+      const affiliateCode = this.generateAffiliateCode();
+
+      const newUser = new this.userModel({
+        userId,
+        affiliateCode,
+        status: 'active',
+        kycVerified: false,
+        fraudSuspected: false,
+        affiliateds: [],
+        transfers: [],
+        totalTransactions: 0,
+        createdAt: new Date(),
+      });
+
+      const savedUser = await newUser.save();
+      this.logger.log(`Novo usuário registrado: ${userId}`);
+      return savedUser;
+    } catch (error) {
+      this.logger.error(`Erro ao registrar usuário ${userId}:`, error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Registra transações para um afiliado
+   */
+  async recordTransactions(
+    userId: string,
+    transactionsData: TransactionInput[],
+  ): Promise<UserDocument> {
+    if (!userId || userId.trim().length === 0) {
+      throw new BadRequestException('userId é obrigatório');
     }
 
-    async getAffiliatedStats(userId: string): Promise<any> {
-        // Logic to retrieve stats for the affiliated user
+    if (!Array.isArray(transactionsData) || transactionsData.length === 0) {
+      throw new BadRequestException('Transações devem ser um array não vazio');
     }
 
-    async syncAffiliate(userId: string, affiliateCode: string): Promise<void> {
+    try {
+      const user = await this.userModel.findOne({ userId });
+      if (!user) {
+        throw new NotFoundException(`Usuário ${userId} não encontrado`);
+      }
+
+      // Validar cada transação
+      for (const transaction of transactionsData) {
+        if (
+          !transaction.id ||
+          !transaction.amount ||
+          !transaction.productName
+        ) {
+          throw new BadRequestException(
+            'Cada transação deve ter id, amount e productName',
+          );
+        }
+
+        if (transaction.amount <= 0) {
+          throw new BadRequestException('Valor da transação deve ser positivo');
+        }
+
+        if (
+          transaction.commissionRate &&
+          (transaction.commissionRate < 0 || transaction.commissionRate > 1)
+        ) {
+          throw new BadRequestException(
+            'Taxa de comissão deve estar entre 0 e 1',
+          );
+        }
+      }
+
+      // Adicionar transações ao primeiro afiliado ou criar novo
+      if (user.affiliateds.length === 0) {
+        user.affiliateds.push({
+          userId,
+          transactions: transactionsData.map((t) => ({
+            ...t,
+            status: 'pending',
+            isVerified: false,
+            date: new Date(),
+            commissionRate: t.commissionRate || 0.1,
+          })),
+          firstTransactionDate: new Date(),
+        });
+      } else {
+        user.affiliateds[0].transactions.push(
+          ...transactionsData.map((t) => ({
+            ...t,
+            status: 'pending',
+            isVerified: false,
+            date: new Date(),
+            commissionRate: t.commissionRate || 0.1,
+          })),
+        );
+      }
+
+      user.totalTransactions = transactionsData.length;
+      user.lastActivityDate = new Date();
+
+      const savedUser = await user.save();
+      this.logger.log(
+        `${transactionsData.length} transações registradas para ${userId}`,
+      );
+      return savedUser;
+    } catch (error) {
+      this.logger.error(
+        `Erro ao registrar transações para ${userId}:`,
+        error.message,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Obtém estatísticas do afiliado
+   */
+  async getAffiliatedStats(userId: string): Promise<any> {
+    if (!userId || userId.trim().length === 0) {
+      throw new BadRequestException('userId é obrigatório');
     }
 
-    async syncTransfers(userId: string): Promise<void> {
-        // Logic to sync transfer data for the affiliated user
+    try {
+      const user = await this.userModel.findOne({ userId });
+      if (!user) {
+        throw new NotFoundException(`Usuário ${userId} não encontrado`);
+      }
+
+      const stats = user.stats;
+
+      return {
+        userId,
+        affiliateCode: user.affiliateCode,
+        status: user.status,
+        kycVerified: user.kycVerified,
+        fraudSuspected: user.fraudSuspected,
+        stats,
+        numberOfAffiliates: user.affiliateds.length,
+        totalTransfers: user.transfers.length,
+        createdAt: user.createdAt,
+        lastActivityDate: user.lastActivityDate,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Erro ao obter estatísticas de ${userId}:`,
+        error.message,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Sincroniza dados do afiliado
+   */
+  async syncAffiliate(userId: string, affiliateCode: string): Promise<void> {
+    if (!userId || userId.trim().length === 0) {
+      throw new BadRequestException('userId é obrigatório');
     }
 
-    async makeContract(userId: string, paymentMethod: {
-        type: 'bank_transfer' | 'paypal' | 'crypto';
-        details: string;
-    }): Promise<void> {
-        // Logic to create a contract for the affiliated user
+    if (!affiliateCode || affiliateCode.trim().length === 0) {
+      throw new BadRequestException('affiliateCode é obrigatório');
     }
 
-    async confirmContract(userId: string, code: string): Promise<void> {
-        // Logic to confirm a contract for the affiliated user
+    try {
+      const user = await this.userModel.findOne({ userId });
+      if (!user) {
+        throw new NotFoundException(`Usuário ${userId} não encontrado`);
+      }
+
+      if (user.affiliateCode !== affiliateCode) {
+        throw new UnauthorizedException('Código de afiliado inválido');
+      }
+
+      user.lastActivityDate = new Date();
+      await user.save();
+
+      this.logger.log(`Afiliado ${userId} sincronizado`);
+    } catch (error) {
+      this.logger.error(
+        `Erro ao sincronizar afiliado ${userId}:`,
+        error.message,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Sincroniza transferências
+   */
+  async syncTransfers(userId: string): Promise<UserDocument> {
+    if (!userId || userId.trim().length === 0) {
+      throw new BadRequestException('userId é obrigatório');
     }
 
+    try {
+      const user = await this.userModel.findOne({ userId });
+      if (!user) {
+        throw new NotFoundException(`Usuário ${userId} não encontrado`);
+      }
 
+      // Validar status de transferências pendentes
+      for (const transfer of user.transfers) {
+        if (transfer.status === 'pending') {
+          // Aqui você pode adicionar lógica para verificar status com API externa
+          // Por enquanto, apenas atualizar a data
+          if (!transfer.date) {
+            transfer.date = new Date();
+          }
+        }
+      }
+
+      user.lastActivityDate = new Date();
+      const savedUser = await user.save();
+
+      this.logger.log(`Transferências sincronizadas para ${userId}`);
+      return savedUser;
+    } catch (error) {
+      this.logger.error(
+        `Erro ao sincronizar transferências de ${userId}:`,
+        error.message,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Cria um contrato com método de pagamento
+   */
+  async makeContract(
+    userId: string,
+    paymentMethod: PaymentMethod,
+  ): Promise<UserDocument> {
+    if (!userId || userId.trim().length === 0) {
+      throw new BadRequestException('userId é obrigatório');
+    }
+
+    if (!paymentMethod || !paymentMethod.type || !paymentMethod.details) {
+      throw new BadRequestException(
+        'paymentMethod com type e details é obrigatório',
+      );
+    }
+
+    if (!['bank_transfer', 'paypal', 'crypto'].includes(paymentMethod.type)) {
+      throw new BadRequestException(
+        'Tipo de pagamento inválido: bank_transfer, paypal ou crypto',
+      );
+    }
+
+    try {
+      const user = await this.userModel.findOne({ userId });
+      if (!user) {
+        throw new NotFoundException(`Usuário ${userId} não encontrado`);
+      }
+
+      if (user.status === 'banned') {
+        throw new UnauthorizedException(
+          'Usuário banido não pode fazer contrato',
+        );
+      }
+
+      if (!user.kycVerified) {
+        throw new BadRequestException(
+          'KYC deve estar verificado para fazer contrato',
+        );
+      }
+
+      // Validar e hashear dados sensíveis dependendo do tipo
+      let secureData: any = {};
+
+      if (paymentMethod.type === 'bank_transfer') {
+        secureData.bankAccountHash = this.hashSensitiveData(
+          paymentMethod.details,
+        );
+      } else if (paymentMethod.type === 'crypto') {
+        secureData.walletAddress = paymentMethod.details; // Em produção, validar endereço
+      } else if (paymentMethod.type === 'paypal') {
+        secureData.paypalEmail = this.hashSensitiveData(paymentMethod.details);
+      }
+
+      const transfer: any = {
+        amount: 0, // Será preenchido quando o contrato for confirmado
+        date: new Date(),
+        status: 'pending',
+        paymentMethod: paymentMethod.type,
+        ...secureData,
+      };
+
+      user.transfers.push(transfer);
+      user.lastActivityDate = new Date();
+
+      const savedUser = await user.save();
+      this.logger.log(
+        `Contrato criado para ${userId} com método: ${paymentMethod.type}`,
+      );
+      return savedUser;
+    } catch (error) {
+      this.logger.error(
+        `Erro ao criar contrato para ${userId}:`,
+        error.message,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Confirma um contrato
+   */
+  async confirmContract(userId: string, code: string): Promise<UserDocument> {
+    if (!userId || userId.trim().length === 0) {
+      throw new BadRequestException('userId é obrigatório');
+    }
+
+    if (!code || code.trim().length === 0) {
+      throw new BadRequestException('code é obrigatório');
+    }
+
+    try {
+      const user = await this.userModel.findOne({ userId });
+      if (!user) {
+        throw new NotFoundException(`Usuário ${userId} não encontrado`);
+      }
+
+      if (user.transfers.length === 0) {
+        throw new NotFoundException('Nenhum contrato pendente encontrado');
+      }
+
+      const pendingTransfer = user.transfers.find(
+        (t) => t.status === 'pending',
+      );
+      if (!pendingTransfer) {
+        throw new BadRequestException(
+          'Nenhum contrato pendente para confirmar',
+        );
+      }
+
+      // Validar código (em produção, usar verificação OTP ou similar)
+      if (!this.validateConfirmationCode(code)) {
+        throw new UnauthorizedException('Código de confirmação inválido');
+      }
+
+      pendingTransfer.status = 'completed';
+      pendingTransfer.completedDate = new Date();
+      user.lastActivityDate = new Date();
+
+      const savedUser = await user.save();
+      this.logger.log(`Contrato confirmado para ${userId}`);
+      return savedUser;
+    } catch (error) {
+      this.logger.error(
+        `Erro ao confirmar contrato para ${userId}:`,
+        error.message,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Métodos auxiliares
+   */
+
+  /**
+   * Gera um código de afiliado único
+   */
+  private generateAffiliateCode(): string {
+    return 'AFF_' + crypto.randomBytes(8).toString('hex').toUpperCase();
+  }
+
+  /**
+   * Hasheia dados sensíveis
+   */
+  private hashSensitiveData(data: string): string {
+    return crypto.createHash('sha256').update(data).digest('hex');
+  }
+
+  /**
+   * Valida código de confirmação (implementar com lógica real)
+   */
+  private validateConfirmationCode(code: string): boolean {
+    // TODO: Implementar validação OTP com serviço externo
+    // Por enquanto, validar formato simples
+    return code.length >= 6;
+  }
 }

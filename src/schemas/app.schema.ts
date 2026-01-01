@@ -85,8 +85,8 @@ class Transfer {
   @Prop({ type: Date })
   completedDate?: Date;
 
-    @Prop({ type: String })
-    details?: string;
+  @Prop({ type: String })
+  details?: string;
 }
 
 export const TransferSchema = SchemaFactory.createForClass(Transfer);
