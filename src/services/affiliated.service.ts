@@ -103,6 +103,15 @@ export class AffiliatedService {
     }
 
     try {
+      const alreadyAffiliated = await this.userModel.findOne({
+        'affiliateds.userId': userId,
+      });
+      if (alreadyAffiliated) {
+        throw new ConflictException(
+          `Usuário ${userId} já é afiliado de outro código`,
+        );
+      }
+
       const user = await this.userModel.findOne({ affiliateCode });
       if (!user) {
         throw new NotFoundException(`Usuário ${userId} não encontrado`);
