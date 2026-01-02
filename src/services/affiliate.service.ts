@@ -65,6 +65,7 @@ export class AffiliateService {
         status: 'active',
         affiliateds: [],
         transfers: [],
+        nextPayment: new Date() + 1 month,
       });
 
       const savedUser = await newUser.save();
@@ -100,7 +101,6 @@ export class AffiliateService {
         throw new NotFoundException(`Usuário ${userId} não encontrado`);
       }
 
-      user.nextPayment = new Date();
       user.affiliateds.push({
         userId,
         transactions: [],
