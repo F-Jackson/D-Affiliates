@@ -18,23 +18,23 @@ export class PaymentService {
   async makeStatsPayment(userId: string) {
     const user = await this.userModel.findOne({ userId });
     if (!user) {
-      throw new NotFoundException(`Usuário ${userId} não encontrado`);
+      throw new NotFoundException(`User ${userId} not found`);
     }
 
     const now = new Date();
     if (user.nextPayment && user.nextPayment > now) {
       this.logger.log(
-        `Pagamento de estatísticas para ${userId} já está agendado em ${user.nextPayment}`,
+        `Stats payment for ${userId} is already scheduled for ${user.nextPayment}`,
       );
       return;
     }
 
-    // Total de ganhos de todos os afiliados
+    // Total earnings from all affiliates
     const totalEarnings = user.affiliateds.reduce((sum, aff) => {
       return sum + aff.transactions.reduce((s, t) => s + t.amount, 0);
     }, 0);
 
-    // Total sacado e pendente
+    // Total withdrawn and pending
     const totalWithdrawn = user.transfers
       .filter((t) => t.status === 'completed')
       .reduce((sum, t) => sum + t.amount, 0);
@@ -43,7 +43,7 @@ export class PaymentService {
       .filter((t) => t.status === 'pending')
       .reduce((sum, t) => sum + t.amount, 0);
 
-    // Afiliados ativos (criados 3+ meses atrás)
+    // Active affiliates (created 3+ months ago)
     const threeMonthsAgo = new Date(Date.now() - 60 * 60 * 1000 * 24 * 30 * 3);
     const affiliatesToCalculate = user.affiliateds.filter((aff) => {
       return aff.createdAt <= threeMonthsAgo;
@@ -51,22 +51,22 @@ export class PaymentService {
 
     const numberOfAffiliates = affiliatesToCalculate.length;
 
-    // IDs de transações já utilizadas em saques anteriores
+    // Transaction IDs already used in previous withdrawals
     const usedTransactionIds = user.transfers
       .flatMap((t) => t.usedTransactionIds || [])
       .filter((id) => id);
 
-    // Transações não utilizadas (disponíveis para saque)
+    // Unused transactions (available for withdrawal)
     const notUsedTransactions = affiliatesToCalculate
       .flatMap((aff) => aff.transactions)
       .filter((t) => !usedTransactionIds.includes(t.id));
 
-    // Ganhos do período (transações não utilizadas e completadas)
+    // Period earnings (unused and completed transactions)
     const totalEarningsPeriod = notUsedTransactions
       .filter((t) => t.status === 'approved')
       .reduce((sum, t) => sum + t.amount, 0);
 
-    // Total de transações não utilizadas
+    // Total unused transactions
     const totalTransactionsPeriod = notUsedTransactions.length;
 
     if (!user.stats) {
@@ -93,11 +93,11 @@ export class PaymentService {
     contractId: string,
   ) {
     if (!userId || userId.trim().length === 0) {
-      throw new BadRequestException('userId é obrigatório');
+      throw new BadRequestException('userId is required');
     }
 
     if (!code || code.trim().length === 0) {
-      throw new BadRequestException('code é obrigatório');
+      throw new BadRequestException('code is required');
     }
 
     try {

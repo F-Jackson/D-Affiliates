@@ -39,21 +39,23 @@ export interface ConfirmContractRequest {
 
 export interface UserRegistrationResponse {
   success: boolean;
+  message: string;
   affiliateCode?: string;
 }
 
 export interface SyncAffiliateResponse {
   success: boolean;
-  message?: string;
+  message: string;
 }
 
 export interface SyncTransfersResponse {
   success: boolean;
-  message?: string;
+  message: string;
 }
 
 export interface AffiliatedStatsResponse {
   success: boolean;
+  message: string;
   affiliateCode?: string;
   status?: string;
   stats?:
@@ -86,17 +88,18 @@ export interface AffiliatedStatsResponse {
 
 export interface PaymentResponse {
   success: boolean;
+  message: string;
 }
 
 export interface ContractResponse {
   contractId: string;
+  message: string;
   status?: string;
-  message?: string;
 }
 
 export interface ConfirmContractResponse {
   success: boolean;
-  message?: string;
+  message: string;
   contractId?: string;
 }
 
