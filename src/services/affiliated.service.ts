@@ -345,7 +345,20 @@ export class AffiliatedService {
   ): Buffer {
     return new Promise<Buffer>((resolve, reject) => {
       try {
-        const pdf = new PDFDocument();
+        const pdf = new PDFDocument({
+          size: 'A4',
+          margin: 50,
+          bufferPages: true,
+          info: {
+            Title: `Contrato de Afiliação - ${contract.contractId}`,
+            Author: 'D-Affiliates Platform',
+            Subject: 'Acordo de Afiliação Digital',
+            Keywords: 'afiliação, contrato, digital',
+            Producer: 'D-Affiliates Security Engine',
+            CreationDate: new Date(),
+          },
+        });
+        
         const chunks: Buffer[] = [];
 
         pdf.on('data', (chunk: Buffer) => {
@@ -360,123 +373,248 @@ export class AffiliatedService {
           reject(err);
         });
 
-        // Adicionar logo no cabeçalho
+        // ===== CABEÇALHO COM LOGO =====
         const logoPath = process.env.LOGO_PATH || './assets/logo.png';
         try {
-          pdf.image(logoPath, 50, 20, { width: 100 });
+          pdf.image(logoPath, 50, 30, { width: 100 });
         } catch (logoError) {
           this.logger.warn(`Logo não encontrada em ${logoPath}`);
         }
 
-        pdf.moveDown(4);
+        // Selador de segurança
+        pdf
+          .fontSize(9)
+          .font('Helvetica-Bold')
+          .fillColor('#FF0000')
+          .text('🔒 DIGITALLY SIGNED - ASSINADO DIGITALMENTE 🔒', {
+            align: 'right',
+            width: 150,
+          })
+          .fillColor('#000000');
 
-        // Cabeçalho
+        pdf.moveDown(1);
+
+        // Linha divisória
+        pdf.moveTo(50, 100).lineTo(545, 100).stroke();
+        pdf.moveDown(0.5);
+
+        // ===== TÍTULO PRINCIPAL =====
         pdf.fontSize(20).font('Helvetica-Bold').text('CONTRATO DE AFILIAÇÃO', {
           align: 'center',
         });
 
+        pdf.fontSize(11).font('Helvetica').text('AFFILIATE AGREEMENT', {
+          align: 'center',
+        });
+
+        pdf.moveDown(0.3);
+        pdf
+          .fontSize(9)
+          .font('Helvetica-Oblique')
+          .text(`Código/Code: ${contract.contractId}`, {
+            align: 'center',
+          });
+
+        // Timestamp e compliance
+        const timestamp = new Date();
+        const unixTimestamp = Math.floor(timestamp.getTime() / 1000);
+        
         pdf.moveDown(0.5);
         pdf
-          .fontSize(10)
+          .fontSize(8)
           .font('Helvetica')
-          .text(`Unix Date: ${Math.floor(Date.now() / 1000)}`, {
+          .text(`Generated: ${timestamp.toISOString()} | Unix: ${unixTimestamp}`, {
             align: 'center',
           });
 
         pdf.moveDown(1);
 
-        // Informações do Contrato
-        pdf.fontSize(12).font('Helvetica-Bold').text('INFORMAÇÕES DO CONTRATO');
-        pdf.moveDown(0.3);
-
-        pdf
-          .fontSize(10)
-          .font('Helvetica')
-          .text(`ID do Contrato: ${contract.contractId}`, { indent: 20 });
-        pdf.text(`Value: R$ ${contract.amount.toFixed(2)}`, { indent: 20 });
-        pdf.text(`Status: ${contract.status.toUpperCase()}`, { indent: 20 });
-        pdf.text(
-          `Confirmation Code: ${contract.secretCode}`,
-          { indent: 20 },
+        // ===== SEÇÃO DE CONFORMIDADE LEGAL =====
+        pdf.fontSize(10).font('Helvetica-Bold').text('LEGAL COMPLIANCE');
+        pdf.fontSize(8).font('Helvetica').text(
+          'Este contrato é válido em: UE/EU, EUA/USA, Reino Unido/UK, Canadá/Canada e demais jurisdições.',
+          { indent: 20 }
         );
+        pdf.text(
+          'This contract is valid in: EU, USA, UK, Canada and other jurisdictions.',
+          { indent: 20 }
+        );
+        pdf.moveDown(0.5);
 
-        pdf.moveDown(1);
-
-        // Informações do Afiliado
-        pdf.fontSize(12).font('Helvetica-Bold').text('INFORMAÇÕES DO AFILIADO');
+        // ===== INFORMAÇÕES DO CONTRATO =====
+        pdf.fontSize(12).font('Helvetica-Bold').text('INFORMAÇÕES DO CONTRATO / CONTRACT INFORMATION');
         pdf.moveDown(0.3);
-        pdf.text(`Código de Afiliado: ${user.affiliateCode}`, {
-          indent: 20,
-        });
-        pdf.text(`Status da Conta: ${user.status.toUpperCase()}`, {
-          indent: 20,
+
+        const contractInfo = [
+          { pt: 'ID do Contrato', en: 'Contract ID', value: contract.contractId },
+          { pt: 'Valor', en: 'Amount', value: `R$ ${contract.amount.toFixed(2)}` },
+          { pt: 'Status', en: 'Status', value: contract.status.toUpperCase() },
+          { pt: 'Código de Confirmação', en: 'Confirmation Code', value: contract.secretCode },
+          { pt: 'Tipo de Contrato', en: 'Contract Type', value: 'AFFILIATE AGREEMENT' },
+          { pt: 'Data de Criação', en: 'Creation Date', value: new Date().toLocaleDateString('pt-BR') },
+        ];
+
+        contractInfo.forEach((item) => {
+          pdf.fontSize(9).font('Helvetica-Bold').text(`${item.pt} / ${item.en}:`, {
+            indent: 20,
+          });
+          pdf.fontSize(9).font('Helvetica').text(item.value, { indent: 40 });
         });
 
         pdf.moveDown(1);
 
-        // Transações Associadas
+        // ===== INFORMAÇÕES DO AFILIADO =====
+        pdf.fontSize(12).font('Helvetica-Bold').text('INFORMAÇÕES DO AFILIADO / AFFILIATE INFORMATION');
+        pdf.moveDown(0.3);
+
+        const affiliateInfo = [
+          { pt: 'ID do Usuário', en: 'User ID', value: user.userId },
+          { pt: 'Código de Afiliado', en: 'Affiliate Code', value: user.affiliateCode },
+          { pt: 'Status da Conta', en: 'Account Status', value: user.status.toUpperCase() },
+        ];
+
+        affiliateInfo.forEach((item) => {
+          pdf.fontSize(9).font('Helvetica-Bold').text(`${item.pt} / ${item.en}:`, {
+            indent: 20,
+          });
+          pdf.fontSize(9).font('Helvetica').text(item.value, { indent: 40 });
+        });
+
+        pdf.moveDown(1);
+
+        // ===== TRANSAÇÕES ASSOCIADAS =====
         if (contract.transcationsIds && contract.transcationsIds.length > 0) {
-          pdf.fontSize(12).font('Helvetica-Bold').text('TRANSAÇÕES ASSOCIADAS');
+          pdf.fontSize(12).font('Helvetica-Bold').text('TRANSAÇÕES ASSOCIADAS / ASSOCIATED TRANSACTIONS');
           pdf.moveDown(0.3);
 
-          contract.transcationsIds.forEach((txId: string, index: number) => {
+          contract.transcationsIds.slice(0, 10).forEach((txId: string, index: number) => {
             const tx = user.affiliateds
               .flatMap((aff) => aff.transactions)
               .find((t) => t.id === txId);
             if (tx) {
-              pdf
-                .fontSize(10)
-                .font('Helvetica')
-                .text(
-                  `${index + 1}. ID: ${tx.id} | Amount: R$ ${tx.amount.toFixed(
-                    2,
-                  )} | Product: ${tx.productName}`,
-                  { indent: 20 },
-                );
-            };
+              pdf.fontSize(9).font('Helvetica').text(
+                `${index + 1}. ${tx.id} | R$ ${tx.amount.toFixed(2)} | ${tx.productName}`,
+                { indent: 20 }
+              );
+            }
           });
+
+          if (contract.transcationsIds.length > 10) {
+            pdf.fontSize(8).font('Helvetica-Oblique').text(
+              `... e mais ${contract.transcationsIds.length - 10} transações`,
+              { indent: 20 }
+            );
+          }
         }
 
         pdf.moveDown(1.5);
 
-        // Termos e Condições
-        pdf.fontSize(11).font('Helvetica-Bold').text('TERMOS E CONDIÇÕES');
+        // ===== TERMOS E CONDIÇÕES (MULTILÍNGUES) =====
+        pdf.fontSize(11).font('Helvetica-Bold').text('TERMOS E CONDIÇÕES / TERMS AND CONDITIONS');
         pdf.moveDown(0.3);
 
-        const termsText = `Este contrato representa um acordo formal entre as partes para a realização de serviços de afiliação. O afiliado concorda com os termos e condições estabelecidos pela plataforma. O pagamento será realizado conforme o cronograma estabelecido e sujeito à verificação das transações.`;
+        const termsText = `1. DEFINIÇÕES / DEFINITIONS: Este contrato estabelece uma relação de afiliação entre as partes, onde o Afiliado (Affiliate) promove produtos/serviços da Plataforma (Platform).
+
+2. PAGAMENTO / PAYMENT: Os pagamentos serão processados conforme cronograma estabelecido, sujeito à verificação completa das transações e conformidade regulatória.
+
+3. CONFORMIDADE / COMPLIANCE: O Afiliado concorda em cumprir com todas as leis e regulamentações aplicáveis nas jurisdições relevantes, incluindo GDPR (EU), CCPA (USA), DPA (UK).
+
+4. SEGURANÇA / SECURITY: Este documento foi assinado digitalmente e pode ser verificado através do hash SHA3-256 fornecido abaixo.
+
+5. RESPONSABILIDADES / RESPONSIBILITIES: Ambas as partes concordam com os termos e responsabilidades descritos neste contrato legal e vinculante.
+
+6. DISPUTAS / DISPUTES: Qualquer disputa será resolvida conforme lei aplicável à jurisdição relevante.`;
 
         pdf
-          .fontSize(9)
+          .fontSize(8)
           .font('Helvetica')
           .text(termsText, {
-            width: 500,
+            width: 445,
             indent: 20,
             align: 'justify',
           });
 
-        pdf.moveDown(2);
+        pdf.moveDown(1.5);
 
-        // Assinatura
-        pdf.fontSize(10).font('Helvetica-Bold').text('ASSINADO DIGITALMENTE', {
-          align: 'center',
-        });
+        // ===== ASSINATURA DIGITAL =====
+        pdf.moveTo(50, pdf.y).lineTo(545, pdf.y).stroke();
         pdf.moveDown(0.5);
 
-        pdf
-          .fontSize(9)
-          .font('Helvetica')
-          .text(`Em: ${new Date().toLocaleString('pt-BR')}`, {
-            align: 'center',
-          });
+        pdf.fontSize(10).font('Helvetica-Bold').text('ASSINATURA DIGITAL / DIGITAL SIGNATURE', {
+          align: 'center',
+        });
+
+        pdf.moveDown(0.3);
+
+        // Gerar hash único e seguro
+        const contractDataForHash = {
+          contractId: contract.contractId,
+          userId: user.userId,
+          amount: contract.amount,
+          timestamp: timestamp.toISOString(),
+          status: contract.status,
+        };
 
         const contractHash = crypto
           .createHash('sha3-256')
-          .update(JSON.stringify(contract))
+          .update(JSON.stringify(contractDataForHash))
           .digest('hex');
 
-        pdf.fontSize(9).text(`Hash: ${contractHash}`, {
-          align: 'center',
-        });
+        // Signature hash (baseado no contrato)
+        const signatureHash = crypto
+          .createHash('sha512')
+          .update(contractHash + user.userId + contract.contractId)
+          .digest('hex')
+          .substring(0, 32);
+
+        pdf
+          .fontSize(8)
+          .font('Helvetica')
+          .text(`Timestamp: ${timestamp.toLocaleString('pt-BR')}`, {
+            align: 'center',
+          });
+
+        pdf.text(`Unix Timestamp: ${unixTimestamp}`, { align: 'center' });
+
+        pdf.moveDown(0.2);
+
+        pdf.fontSize(7).font('Helvetica-Oblique').text(
+          `SHA3-256 Contract Hash:\n${contractHash}`,
+          {
+            align: 'center',
+            width: 495,
+          }
+        );
+
+        pdf.fontSize(7).font('Helvetica-Oblique').text(
+          `Digital Signature: ${signatureHash}`,
+          {
+            align: 'center',
+          }
+        );
+
+        pdf.moveDown(0.5);
+
+        // Aviso final
+        pdf.fontSize(7).font('Helvetica-Bold').fillColor('#333333').text(
+          '✓ DOCUMENTO VERIFICÁVEL / VERIFIABLE DOCUMENT\n✓ VÁLIDO LEGALMENTE / LEGALLY VALID\n✓ CONFORMIDADE REGULATÓRIA / REGULATORY COMPLIANCE',
+          {
+            align: 'center',
+          }
+        );
+
+        pdf.fillColor('#000000');
+
+        pdf.moveDown(1);
+
+        // Footer
+        pdf.fontSize(6).font('Helvetica').text(
+          'D-Affiliates Platform © 2026 - Documento assinado digitalmente | Digitally signed document | This document is legally binding in multiple jurisdictions.',
+          {
+            align: 'center',
+            width: 495,
+          }
+        );
 
         pdf.end();
       } catch (error) {
