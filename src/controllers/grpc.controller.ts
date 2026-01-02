@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { GrpcMethod } from '@nestjs/microservices';
+import { Ctx, GrpcMethod } from '@nestjs/microservices';
 import type {
   RegisterUserRequest,
   SyncAffiliateRequest,
@@ -15,14 +15,61 @@ import type {
   ConfirmContractResponse,
 } from '../proto/affiliates.pb';
 import { AffiliatedService } from '../services/affiliated.service';
+import { ConfigService } from '@nestjs/config';
+import { Metadata } from '@grpc/grpc-js';
+import IdempotencyCheckService from 'src/security/idempotency-check.service';
 
 @Controller()
 export class AffiliatesController {
-  constructor(private readonly affiliatedService: AffiliatedService) {}
+  constructor(
+    private readonly affiliatedService: AffiliatedService,
+    private readonly idempotencyCheckService: IdempotencyCheckService,
+    private readonly configService: ConfigService,
+  ) {}
+
+  private validateApiKey(context: { metadata: Metadata }): void {
+    const apiKey = context.metadata.get('x-api-key')?.[0]?.toString();
+    const expectedApiKey = this.configService.get<string>('MAILER_API_KEY');
+
+    if (!apiKey) {
+      throw new Error('API-Key is required');
+    }
+
+    if (apiKey !== expectedApiKey) {
+      throw new Error('Invalid API-Key');
+    }
+  }
+
+  private async handleIdempotency(
+    operationName: string,
+    idempotencyKey: string,
+  ) {
+    await this.idempotencyCheckService.checkIdempotencyEvent(
+      operationName,
+      idempotencyKey,
+    );
+    await this.idempotencyCheckService.setIdempotencyEvent(
+      operationName,
+      idempotencyKey,
+    );
+  }
+
+  private getIdempotencyKey(context: { metadata: Metadata }): string {
+    const idempotencyKey = context.metadata
+      .get('idempotency-key')?.[0]
+      ?.toString();
+
+    if (!idempotencyKey) {
+      throw new Error('Idempotency-Key is required');
+    }
+
+    return idempotencyKey;
+  }
 
   @GrpcMethod('AffiliatesService', 'RegisterUser')
   async registerUser(
     request: RegisterUserRequest,
+    @Ctx() context: { metadata: Metadata },
   ): Promise<UserRegistrationResponse> {
     try {
       const result = await this.affiliatedService.registerUser(
@@ -46,6 +93,7 @@ export class AffiliatesController {
   @GrpcMethod('AffiliatesService', 'SyncAffiliate')
   async syncAffiliate(
     request: SyncAffiliateRequest,
+    @Ctx() context: { metadata: Metadata },
   ): Promise<SyncAffiliateResponse> {
     try {
       await this.affiliatedService.syncAffiliate(
@@ -67,6 +115,7 @@ export class AffiliatesController {
   @GrpcMethod('AffiliatesService', 'SyncTransfers')
   async syncTransfers(
     request: SyncTransfersRequest,
+    @Ctx() context: { metadata: Metadata },
   ): Promise<SyncTransfersResponse> {
     try {
       await this.affiliatedService.syncTransfers(request.userId);
@@ -85,6 +134,7 @@ export class AffiliatesController {
   @GrpcMethod('AffiliatesService', 'GetAffiliatedStats')
   async getAffiliatedStats(
     request: GetAffiliatedStatsRequest,
+    @Ctx() context: { metadata: Metadata },
   ): Promise<AffiliatedStatsResponse> {
     try {
       const stats = await this.affiliatedService.getAffiliatedStats(
@@ -106,6 +156,7 @@ export class AffiliatesController {
   @GrpcMethod('AffiliatesService', 'MakeStatsPayment')
   async makeStatsPayment(
     request: MakeStatsPaymentRequest,
+    @Ctx() context: { metadata: Metadata },
   ): Promise<PaymentResponse> {
     try {
       await this.affiliatedService.makeStatsPayment(request.userId);
@@ -124,6 +175,7 @@ export class AffiliatesController {
   @GrpcMethod('AffiliatesService', 'ConfirmContract')
   async confirmContract(
     request: ConfirmContractRequest,
+    @Ctx() context: { metadata: Metadata },
   ): Promise<ConfirmContractResponse> {
     try {
       await this.affiliatedService.confirmContract(
