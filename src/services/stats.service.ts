@@ -1,4 +1,10 @@
-import { Injectable, Logger, NotFoundException, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as crypto from 'crypto';
@@ -51,7 +57,9 @@ export class StatsService {
       throw new NotFoundException(`Usuário ${userId} não encontrado`);
     }
 
-    const pendingContracts = user.contracts.filter((c) => c.status === 'pending');
+    const pendingContracts = user.contracts.filter(
+      (c) => c.status === 'pending',
+    );
     if (pendingContracts.length === 0) {
       this.logger.log(`Nenhum contrato pendente para enviar para ${userId}`);
       return;

@@ -1,4 +1,10 @@
-import { Injectable, Logger, BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as crypto from 'crypto';
@@ -65,7 +71,11 @@ export class AffiliateService {
       }
 
       user.nextPayment = new Date();
-      user.affiliateds.push({ userId, transactions: [], createdAt: new Date() });
+      user.affiliateds.push({
+        userId,
+        transactions: [],
+        createdAt: new Date(),
+      });
       await user.save();
 
       this.logger.log(`Afiliado ${userId} sincronizado`);
@@ -92,7 +102,9 @@ export class AffiliateService {
       user.transferSyncStatus = 'syncing';
       await user.save();
 
-      const threeMonthsAgo = new Date(Date.now() - 60 * 60 * 1000 * 24 * 30 * 3);
+      const threeMonthsAgo = new Date(
+        Date.now() - 60 * 60 * 1000 * 24 * 30 * 3,
+      );
       const affiliatesToCalculate = user.affiliateds.filter((aff) => {
         return aff.createdAt <= threeMonthsAgo;
       });

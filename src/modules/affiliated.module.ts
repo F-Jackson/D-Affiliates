@@ -8,7 +8,9 @@ import { AffiliateService } from '../services/affiliate.service';
 import { StatsService } from '../services/stats.service';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: User.name, schema: UserSchema }])],
+  imports: [
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+  ],
   providers: [
     AffiliatedService,
     ContractService,

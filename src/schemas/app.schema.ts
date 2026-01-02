@@ -59,7 +59,13 @@ class Contracts {
     ],
     default: 'pending',
   })
-  status: 'waiting-payment' | 'paid' | 'parcial-paid' | 'pending' | 'terminated' | 'suspended';
+  status:
+    | 'waiting-payment'
+    | 'paid'
+    | 'parcial-paid'
+    | 'pending'
+    | 'terminated'
+    | 'suspended';
 
   @Prop({ required: true, type: Number, min: 0.01 })
   amount: number;
@@ -107,7 +113,11 @@ class Transfer {
   @Prop({ required: true, type: Date })
   date: Date;
 
-  @Prop({ required: true, enum: ['pending', 'completed', 'failed'], default: 'pending' })
+  @Prop({
+    required: true,
+    enum: ['pending', 'completed', 'failed'],
+    default: 'pending',
+  })
   status: 'pending' | 'completed' | 'failed';
 
   @Prop({ type: String })
