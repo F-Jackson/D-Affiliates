@@ -19,6 +19,14 @@ export class AffiliatedService {
     return this.statsService.getAffiliatedStats(userId);
   }
 
+async adminGetAffiliatedStats(userId: string) {
+    return this.statsService.getAffiliatedStats(userId);
+  }
+
+  async adminGetAffiliatesList(page: number) {
+    return this.affiliateService.getAffiliatesList(page);
+  }
+
   async syncAffiliate(userId: string, affiliateCode: string) {
     return this.affiliateService.syncAffiliate(userId, affiliateCode);
   }

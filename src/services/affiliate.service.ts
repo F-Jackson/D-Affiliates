@@ -203,4 +203,24 @@ export class AffiliateService {
   private generateAffiliateCode() {
     return 'AFF_' + crypto.randomBytes(12).toString('hex').toUpperCase();
   }
+
+  async getAffiliatesList(page: number) {
+    const pageSize = 20;
+    const skip = (page - 1) * pageSize;
+
+    const users = await this.userModel
+      .find({})
+      .skip(skip)
+      .limit(pageSize)
+      .select('_id affiliateCode createdAt');
+
+    const totalUsers = await this.userModel.countDocuments();
+
+    return {
+      affiliates: users,
+      currentPage: page,
+      totalPages: Math.ceil(totalUsers / pageSize),
+      totalAffiliates: totalUsers,
+    };
+  }
 }
