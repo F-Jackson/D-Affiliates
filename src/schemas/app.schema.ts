@@ -71,9 +71,6 @@ class Contracts {
   secretCode: string;
 
   @Prop({ type: String })
-  assImageUrl?: string;
-
-  @Prop({ type: String })
   paymentMethod?: string;
 
   @Prop({ type: [String] })
