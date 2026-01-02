@@ -9,7 +9,40 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as crypto from 'crypto';
 import { User, UserDocument } from '../schemas/app.schema';
-import { DOCUMENT_RULES_BY_COUNTRY } from './document-rules';
+
+
+const ALLOWED_AFFILIATE_COUNTRY = [
+  // Tier 1 — Criadores profissionais / alta maturidade em afiliados
+  'US', // Estados Unidos (marketing de performance avançado)
+  'UK', // Reino Unido
+  'CA', // Canadá
+  'AU', // Austrália
+
+  // Tier 2 — Alto volume de creators + custo mais baixo
+  'BR', // Brasil (YouTube, Instagram, TikTok muito fortes)
+  'MX', // México
+  'AR', // Argentina
+  'CO', // Colômbia
+
+  // Europa — SEO, review sites, afiliados técnicos
+  'PT', // Portugal
+  'ES', // Espanha
+  'PL', // Polônia
+  'RO', // Romênia
+
+  // Ásia — creators massivos, mobile-first
+  'IN', // Índia
+  'PH', // Filipinas
+  'ID', // Indonésia
+  'VN', // Vietnã
+
+  // África — crescimento orgânico e tráfego social
+  'NG', // Nigéria
+  'KE', // Quênia
+
+  // Oriente Médio — creators + tráfego pago
+  'AE', // Emirados Árabes Unidos
+];
 
 @Injectable()
 export class AffiliateService {
@@ -20,7 +53,6 @@ export class AffiliateService {
   async registerUser(
     userId: string,
     country: string,
-    documentId: string,
   ): Promise<UserDocument> {
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId é obrigatório');
@@ -32,28 +64,9 @@ export class AffiliateService {
         throw new ConflictException('Usuário já está registrado');
       }
 
-      const docRule = DOCUMENT_RULES_BY_COUNTRY[country];
-      if (!docRule) {
+      if (!ALLOWED_AFFILIATE_COUNTRY.includes(country.toUpperCase())) {
         throw new BadRequestException(
-          `País ${country} não é permitido ou não possui regras de validação`,
-        );
-      }
-
-      if (!documentId || documentId.trim().length === 0) {
-        throw new BadRequestException('documentId é obrigatório');
-      }
-
-      const normalizedDocId = docRule.normalize(documentId);
-
-      if (!docRule.regex.test(normalizedDocId)) {
-        throw new BadRequestException(
-          `Formato de documento inválido para ${country} (esperado: ${docRule.name})`,
-        );
-      }
-
-      if (!docRule.validate(normalizedDocId)) {
-        throw new BadRequestException(
-          `Documento inválido para ${country} - falha na validação de checksum`,
+          `País ${country} não é suportado para afiliados`,
         );
       }
 
