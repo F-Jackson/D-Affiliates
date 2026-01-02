@@ -30,7 +30,6 @@ export class StatsService {
       const stats = user.stats;
 
       return {
-        userId,
         affiliateCode: user.affiliateCode,
         status: user.status,
         stats,
