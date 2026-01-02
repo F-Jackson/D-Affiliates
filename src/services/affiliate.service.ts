@@ -160,7 +160,6 @@ export class AffiliateService {
               description: tx.description || '',
               transactionId: tx.externalTransactionId || '',
               status: tx.status || 'pending',
-              isVerified: false,
               paymentProofUrl: tx.paymentProofUrl || '',
               date: tx.date ? new Date(tx.date) : new Date(),
             });

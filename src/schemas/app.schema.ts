@@ -34,10 +34,7 @@ class Transaction {
   status: 'pending' | 'approved' | 'rejected' | 'under_review' | 'reversed';
 
   @Prop({ type: String })
-  transactionId?: string;
-
-  @Prop({ type: Boolean, default: false })
-  isVerified: boolean;
+  transactionId: string;
 }
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);
