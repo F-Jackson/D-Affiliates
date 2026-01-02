@@ -159,7 +159,7 @@ export class AffiliatedService {
               status: tx.status || 'pending',
               isVerified: false,
               paymentProofUrl: tx.paymentProofUrl || '',
-              date: new Date(),
+              date: tx.date ? new Date(tx.date) : new Date(),
             });
           }
         }
@@ -182,6 +182,34 @@ export class AffiliatedService {
 
       throw error;
     }
+  }
+
+  async sendContractToAffiliates(userId: string): Promise<void> {
+    if (!userId || userId.trim().length === 0) {
+      throw new BadRequestException('userId é obrigatório');
+    }
+
+    const user = await this.userModel.findOne({ userId });
+    if (!user) {
+      throw new NotFoundException(`Usuário ${userId} não encontrado`);
+    }
+
+    const lastTransferDate = user.transfers.length
+      ? user.transfers[user.transfers.length - 1].date
+      : null;
+
+    const threeMonth = new Date(Date.now() - 60 * 60 * 1000 * 24 * 30 * 3);
+
+    const affiliatesToNotify = user.affiliateds.filter((aff) => {
+      return (
+        !lastTransferDate ||
+        (aff.transactions.some(
+          (tx) => new Date(tx.date) > lastTransferDate,
+        ))
+      ) && aff.createdAt <= threeMonth;
+    });
+
+    
   }
 
   async makeContract(
