@@ -209,7 +209,11 @@ export class AffiliatedService {
       ) && aff.createdAt <= threeMonth;
     });
 
-    
+    for (const aff of affiliatesToNotify) {
+      this.logger.log(
+        `Enviando contrato para afiliado ${aff.userId} de ${userId}`,
+      );
+    }
   }
 
   async makeContract(
