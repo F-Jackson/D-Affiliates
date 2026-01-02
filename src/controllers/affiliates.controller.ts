@@ -73,7 +73,7 @@ export class AffiliatesController {
   @Post('contract/create')
   @HttpCode(HttpStatus.CREATED)
   async makeContract(@Body() makeContractDto: MakeContractDto) {
-    return this.affiliatedService.makeContract(makeContractDto.userId);
+    return this.affiliatedService.adminMakeContract(makeContractDto.userId);
   }
 
   @Post('contract/confirm')

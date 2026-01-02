@@ -25,7 +25,17 @@ export class AdminController {
   async getAffiliatesList(
     @Query('page') page: number = 1,
   ): Promise<PaginatedAffiliatesResponseDto> {
-    return this.affiliatedService.adminGetAffiliatesList(page);
+    const result = await this.affiliatedService.adminGetAffiliatesList(page);
+    return {
+      affiliates: result.affiliates.map((user: any) => ({
+        _id: user._id.toString(),
+        affiliateCode: user.affiliateCode,
+        createdAt: user.createdAt,
+      })),
+      currentPage: result.currentPage,
+      totalPages: result.totalPages,
+      totalAffiliates: result.totalAffiliates,
+    };
   }
 
   @Get('stats/:userId')

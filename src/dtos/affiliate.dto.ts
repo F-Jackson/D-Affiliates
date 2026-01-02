@@ -1,4 +1,11 @@
-import { IsString, IsNumber, IsEnum, IsOptional, IsArray, IsDate } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsEnum,
+  IsOptional,
+  IsArray,
+  IsDate,
+} from 'class-validator';
 
 // ========== PUBLIC ENDPOINTS DTOS ==========
 
@@ -59,6 +66,18 @@ export class GetAffiliatedStatsDto {
 
 // ========== ADMIN ENDPOINTS DTOS ==========
 
+export class AdminChangeTransferStatusSuccessDto {
+  @IsString()
+  paymentProofUrl: string;
+
+  @IsOptional()
+  @IsString()
+  internalPaymentProofUrl?: string;
+
+  @IsDate()
+  completedDate: Date;
+}
+
 export class AdminChangeTransferStatusDto {
   @IsString()
   userId: string;
@@ -71,17 +90,7 @@ export class AdminChangeTransferStatusDto {
   failedReason?: string;
 
   @IsOptional()
-  success?: {
-    @IsString()
-    paymentProofUrl: string;
-
-    @IsOptional()
-    @IsString()
-    internalPaymentProofUrl?: string;
-
-    @IsDate()
-    completedDate: Date;
-  };
+  success?: AdminChangeTransferStatusSuccessDto;
 
   @IsOptional()
   @IsString()
@@ -101,8 +110,13 @@ export class AdminGetAffiliatesListDto {
 // ========== RESPONSE DTOS ==========
 
 export class AffiliateSummaryDto {
+  @IsString()
   _id: string;
+
+  @IsString()
   affiliateCode: string;
+
+  @IsDate()
   createdAt: Date;
 }
 

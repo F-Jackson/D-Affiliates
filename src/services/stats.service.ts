@@ -93,7 +93,7 @@ export class StatsService {
     }
   }
 
-  async makeContract(userId: string) {
+  async adminMakeContract(userId: string) {
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId é obrigatório');
     }
