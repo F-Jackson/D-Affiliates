@@ -60,7 +60,7 @@ export class AdminController {
     @Headers('x-api-key') apiKey: string,
   ) {
     this.validateApiKey(apiKey);
-    
+
     return this.affiliatedService.adminGetAffiliatedStats(userId);
   }
 
