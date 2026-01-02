@@ -11,36 +11,36 @@ import * as crypto from 'crypto';
 import { User, UserDocument } from '../schemas/user.schema';
 
 const ALLOWED_AFFILIATE_COUNTRY = [
-  // Tier 1 — Criadores profissionais / alta maturidade em afiliados
-  'US', // Estados Unidos (marketing de performance avançado)
-  'UK', // Reino Unido
-  'CA', // Canadá
-  'AU', // Austrália
+  // Tier 1 — Professional creators / high maturity in affiliates
+  'US', // United States (advanced performance marketing)
+  'UK', // United Kingdom
+  'CA', // Canada
+  'AU', // Australia
 
-  // Tier 2 — Alto volume de creators + custo mais baixo
-  'BR', // Brasil (YouTube, Instagram, TikTok muito fortes)
-  'MX', // México
+  // Tier 2 — High volume of creators + lower cost
+  'BR', // Brazil (YouTube, Instagram, TikTok very strong)
+  'MX', // Mexico
   'AR', // Argentina
-  'CO', // Colômbia
+  'CO', // Colombia
 
-  // Europa — SEO, review sites, afiliados técnicos
+  // Europe — SEO, review sites, technical affiliates
   'PT', // Portugal
-  'ES', // Espanha
-  'PL', // Polônia
-  'RO', // Romênia
+  'ES', // Spain
+  'PL', // Poland
+  'RO', // Romania
 
-  // Ásia — creators massivos, mobile-first
-  'IN', // Índia
-  'PH', // Filipinas
-  'ID', // Indonésia
-  'VN', // Vietnã
+  // Asia — massive creators, mobile-first
+  'IN', // India
+  'PH', // Philippines
+  'ID', // Indonesia
+  'VN', // Vietnam
 
-  // África — crescimento orgânico e tráfego social
-  'NG', // Nigéria
-  'KE', // Quênia
+  // Africa — organic growth and social traffic
+  'NG', // Nigeria
+  'KE', // Kenya
 
-  // Oriente Médio — creators + tráfego pago
-  'AE', // Emirados Árabes Unidos
+  // Middle East — creators + paid traffic
+  'AE', // United Arab Emirates
 ];
 
 @Injectable()
@@ -51,18 +51,18 @@ export class AffiliateService {
 
   async registerUser(userId: string, country: string) {
     if (!userId || userId.trim().length === 0) {
-      throw new BadRequestException('userId é obrigatório');
+      throw new BadRequestException('userId is required');
     }
 
     try {
       const existingUser = await this.userModel.findOne({ userId });
       if (existingUser) {
-        throw new ConflictException('Usuário já está registrado');
+        throw new ConflictException('User is already registered');
       }
 
       if (!ALLOWED_AFFILIATE_COUNTRY.includes(country.toUpperCase())) {
         throw new BadRequestException(
-          `País ${country} não é suportado para afiliados`,
+          `Country ${country} is not supported for affiliates`,
         );
       }
 
@@ -78,21 +78,21 @@ export class AffiliateService {
       });
 
       const savedUser = await newUser.save();
-      this.logger.log(`Novo usuário registrado: ${userId} (${country})`);
+      this.logger.log(`New user registered: ${userId} (${country})`);
       return savedUser;
     } catch (error) {
-      this.logger.error(`Erro ao registrar usuário ${userId}:`, error.message);
+      this.logger.error(`Error registering user ${userId}:`, error.message);
       throw error;
     }
   }
 
   async syncAffiliate(userId: string, affiliateCode: string) {
     if (!userId || userId.trim().length === 0) {
-      throw new BadRequestException('userId é obrigatório');
+      throw new BadRequestException('userId is required');
     }
 
     if (!affiliateCode || affiliateCode.trim().length === 0) {
-      throw new BadRequestException('affiliateCode é obrigatório');
+      throw new BadRequestException('affiliateCode is required');
     }
 
     try {
@@ -101,13 +101,13 @@ export class AffiliateService {
       });
       if (alreadyAffiliated) {
         throw new ConflictException(
-          `Usuário ${userId} já é afiliado de outro código`,
+          `User ${userId} is already affiliated with another code`,
         );
       }
 
       const user = await this.userModel.findOne({ affiliateCode });
       if (!user) {
-        throw new NotFoundException(`Usuário ${userId} não encontrado`);
+        throw new NotFoundException(`User ${userId} not found`);
       }
 
       user.affiliateds.push({
@@ -117,10 +117,10 @@ export class AffiliateService {
       });
       await user.save();
 
-      this.logger.log(`Afiliado ${userId} sincronizado`);
+      this.logger.log(`Affiliate ${userId} synced`);
     } catch (error) {
       this.logger.error(
-        `Erro ao sincronizar afiliado ${userId}:`,
+        `Error syncing affiliate ${userId}:`,
         error.message,
       );
       throw error;
@@ -129,12 +129,12 @@ export class AffiliateService {
 
   async syncTransfers(userId: string) {
     if (!userId || userId.trim().length === 0) {
-      throw new BadRequestException('userId é obrigatório');
+      throw new BadRequestException('userId is required');
     }
 
     const user = await this.userModel.findOne({ userId });
     if (!user) {
-      throw new NotFoundException(`Usuário ${userId} não encontrado`);
+      throw new NotFoundException(`User ${userId} not found`);
     }
 
     try {
@@ -179,11 +179,11 @@ export class AffiliateService {
       user.transferSyncStatus = 'completed';
       const savedUser = await user.save();
 
-      this.logger.log(`Transferências sincronizadas para ${userId}`);
+      this.logger.log(`Transfers synced for ${userId}`);
       return savedUser;
     } catch (error) {
       this.logger.error(
-        `Erro ao sincronizar transferências de ${userId}:`,
+        `Error syncing transfers for ${userId}:`,
         error.message,
       );
 
