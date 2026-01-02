@@ -18,19 +18,19 @@ export class StatsService {
 
   async adminGetAffiliatedStats(userId: string) {
     if (!userId || userId.trim().length === 0) {
-      throw new BadRequestException('userId é obrigatório');
+      throw new BadRequestException('userId is required');
     }
 
     try {
       const user = await this.userModel.findOne({ userId });
       if (!user) {
-        throw new NotFoundException(`Usuário ${userId} não encontrado`);
+        throw new NotFoundException(`User ${userId} not found`);
       }
 
       return user;
     } catch (error) {
       this.logger.error(
-        `Erro ao obter estatísticas administrativas de ${userId}:`,
+        `Error getting admin stats for ${userId}:`,
         error.message,
       );
       throw error;
@@ -39,13 +39,13 @@ export class StatsService {
 
   async getAffiliatedStats(userId: string) {
     if (!userId || userId.trim().length === 0) {
-      throw new BadRequestException('userId é obrigatório');
+      throw new BadRequestException('userId is required');
     }
 
     try {
       const user = await this.userModel.findOne({ userId });
       if (!user) {
-        throw new NotFoundException(`Usuário ${userId} não encontrado`);
+        throw new NotFoundException(`User ${userId} not found`);
       }
 
       const stats = user.stats;
@@ -81,67 +81,62 @@ export class StatsService {
         })),
       };
     } catch (error) {
-      this.logger.error(
-        `Erro ao obter estatísticas de ${userId}:`,
-        error.message,
-      );
+      this.logger.error(`Error getting stats for ${userId}:`, error.message);
       throw error;
     }
   }
 
   async adminSendContractPendingToAffiliate(userId: string) {
     if (!userId || userId.trim().length === 0) {
-      throw new BadRequestException('userId é obrigatório');
+      throw new BadRequestException('userId is required');
     }
 
     const user = await this.userModel.findOne({ userId });
     if (!user) {
-      throw new NotFoundException(`Usuário ${userId} não encontrado`);
+      throw new NotFoundException(`User ${userId} not found`);
     }
 
     const pendingContracts = user.contracts.filter(
       (c) => c.status === 'pending',
     );
     if (pendingContracts.length === 0) {
-      this.logger.log(`Nenhum contrato pendente para enviar para ${userId}`);
+      this.logger.log(`No pending contracts to send for ${userId}`);
       return;
     }
 
     for (const contract of pendingContracts) {
       this.logger.log(
-        `Enviando contrato para ${userId}: Valor ${contract.amount}`,
+        `Sending contract to ${userId}: Amount ${contract.amount}`,
       );
     }
   }
 
   async adminMakeContract(userId: string) {
     if (!userId || userId.trim().length === 0) {
-      throw new BadRequestException('userId é obrigatório');
+      throw new BadRequestException('userId is required');
     }
 
     try {
       const user = await this.userModel.findOne({ userId });
       if (!user) {
-        throw new NotFoundException(`Usuário ${userId} não encontrado`);
+        throw new NotFoundException(`User ${userId} not found`);
       }
 
       if (user.status === 'banned') {
-        throw new UnauthorizedException(
-          'Usuário banido não pode fazer contrato',
-        );
+        throw new UnauthorizedException('Banned user cannot make a contract');
       }
 
       if (user.status === 'suspended') {
         throw new UnauthorizedException(
-          'Usuário suspenso não pode fazer contrato',
+          'Suspended user cannot make a contract',
         );
       }
 
-      // Verificar se há ganhos disponíveis
+      // Check if there are available earnings
       const earnedAmount = user.stats?.totalEarningsLastMonth || 0;
       if (earnedAmount <= 0) {
         throw new BadRequestException(
-          'Nenhum ganho disponível para criar contrato',
+          'No earnings available to create contract',
         );
       }
 
@@ -155,7 +150,7 @@ export class StatsService {
         if (!existingContract) break;
 
         if (tries <= 0) {
-          throw new Error('Não foi possível gerar um ID único para o contrato');
+          throw new Error('Could not generate unique ID for contract');
         }
 
         cdId = crypto.randomBytes(16).toString('hex').toUpperCase();
@@ -174,12 +169,12 @@ export class StatsService {
 
       const savedUser = await user.save();
       this.logger.log(
-        `Contrato criado para ${userId} com valor de R$ ${earnedAmount}`,
+        `Contract created for ${userId} with amount ${earnedAmount}`,
       );
       return savedUser;
     } catch (error) {
       this.logger.error(
-        `Erro ao criar contrato para ${userId}:`,
+        `Error creating contract for ${userId}:`,
         error.message,
       );
       throw error;

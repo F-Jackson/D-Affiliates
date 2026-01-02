@@ -118,9 +118,7 @@ export class PaymentService {
       }
 
       if (contract.status !== 'pending') {
-        throw new BadRequestException(
-          `Contract ${contractId} is not pending`,
-        );
+        throw new BadRequestException(`Contract ${contractId} is not pending`);
       }
 
       if (contract.secretCode !== code) {
@@ -176,9 +174,7 @@ export class PaymentService {
       }
 
       if (contract.status !== 'pending') {
-        throw new BadRequestException(
-          `Contract ${contractId} is not pending`,
-        );
+        throw new BadRequestException(`Contract ${contractId} is not pending`);
       }
 
       contract.plataform = platform;
@@ -235,8 +231,6 @@ export class PaymentService {
     }
 
     await user.save();
-    this.logger.log(
-      `Transfer ${transferId} updated for user ${userId}`,
-    );
+    this.logger.log(`Transfer ${transferId} updated for user ${userId}`);
   }
 }

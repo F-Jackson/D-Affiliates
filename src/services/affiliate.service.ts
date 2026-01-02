@@ -119,10 +119,7 @@ export class AffiliateService {
 
       this.logger.log(`Affiliate ${userId} synced`);
     } catch (error) {
-      this.logger.error(
-        `Error syncing affiliate ${userId}:`,
-        error.message,
-      );
+      this.logger.error(`Error syncing affiliate ${userId}:`, error.message);
       throw error;
     }
   }
