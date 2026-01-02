@@ -285,6 +285,8 @@ export class AffiliatedService {
     }
   }
 
+  async makeSignedPdfContract(userId: string): Promise<void> {}
+
   async makeContract(userId: string): Promise<UserDocument> {
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId é obrigatório');
