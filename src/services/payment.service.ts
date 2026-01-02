@@ -86,7 +86,7 @@ export class PaymentService {
     await user.save();
   }
 
-  async confirmContract(userId: string, code: string): Promise<UserDocument> {
+  async confirmContract(userId: string, code: string, contractId: string): Promise<UserDocument> {
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId é obrigatório');
     }
@@ -105,21 +105,30 @@ export class PaymentService {
         throw new NotFoundException('Nenhum contrato pendente encontrado');
       }
 
-      const pendingTransfer = user.transfers.find(
-        (t) => t.status === 'pending',
-      );
-      if (!pendingTransfer) {
-        throw new BadRequestException(
-          'Nenhum contrato pendente para confirmar',
-        );
+      const contract = user.contracts.find((c => c.contractId === contractId));
+      if (!contract) {
+        throw new NotFoundException(`Contrato ${contractId} não encontrado para o usuário ${userId}`);
       }
 
-      if (!this.validateConfirmationCode(code)) {
+      if (contract.status !== 'pending') {
+        throw new BadRequestException(`Contrato ${contractId} não está pendente`);
+      }
+
+      if (contract.secretCode !== code) {
         throw new UnauthorizedException('Código de confirmação inválido');
       }
 
-      pendingTransfer.status = 'completed';
-      pendingTransfer.completedDate = new Date();
+      contract.status = 'confirmed';
+      contract.confirmedAt = new Date();
+
+      const newTransfer = {
+        amount: contract.amount,
+        status: 'pending' as const,
+        usedTransactionIds: contract.transcationsIds,
+        createdAt: new Date(),
+      };
+
+      user.transfers.push(newTransfer);
 
       const savedUser = await user.save();
       this.logger.log(`Contrato confirmado para ${userId}`);
@@ -131,9 +140,5 @@ export class PaymentService {
       );
       throw error;
     }
-  }
-
-  private validateConfirmationCode(code: string): boolean {
-    return code.length >= 6;
   }
 }

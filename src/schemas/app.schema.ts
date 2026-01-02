@@ -57,12 +57,12 @@ class Contracts {
     default: 'pending',
   })
   status:
-    | 'waiting-payment'
-    | 'paid'
-    | 'parcial-paid'
     | 'pending'
-    | 'terminated'
+    | 'confirmed'
     | 'suspended';
+
+  @Prop({ type: Date })
+  confirmedAt?: Date;
 
   @Prop({ required: true, type: Number, min: 0.01 })
   amount: number;
@@ -104,18 +104,12 @@ class Transfer {
   @Prop({ required: true, type: Number, min: 0.01 })
   amount: number;
 
-  @Prop({ required: true, type: Date })
-  date: Date;
-
   @Prop({
     required: true,
     enum: ['pending', 'completed', 'failed'],
     default: 'pending',
   })
   status: 'pending' | 'completed' | 'failed';
-
-  @Prop({ type: String })
-  pdfUrl?: string;
 
   @Prop({ enum: ['bank_transfer', 'paypal', 'crypto'] })
   paymentMethod?: 'bank_transfer' | 'paypal' | 'crypto';
