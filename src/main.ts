@@ -7,12 +7,10 @@ import hpp from 'hpp';
 import xss from 'xss';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
-import { ConfigService } from '@nestjs/config';
 import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { cors: false });
-  const config = app.get(ConfigService);
+  const app = await NestFactory.create(AppModule);
 
   const grpcUrl = process.env.GRPC_URL ?? 'localhost:5000';
   app.connectMicroservice<MicroserviceOptions>({
