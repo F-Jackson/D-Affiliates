@@ -264,7 +264,7 @@ export class AffiliatedService {
     return [];
   }
 
-  async sendContractToAffiliates(userId: string): Promise<void> {
+  async sendContractPendingToAffiliate(userId: string): Promise<void> {
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId é obrigatório');
     }
@@ -274,10 +274,14 @@ export class AffiliatedService {
       throw new NotFoundException(`Usuário ${userId} não encontrado`);
     }
 
-    for (const aff of affiliatesToNotify) {
-      this.logger.log(
-        `Enviando contrato para afiliado ${aff.userId} de ${userId}`,
-      );
+    const pendingContracts = user.contracts.filter((c => c.status === 'pending'));
+    if (pendingContracts.length === 0) {
+      this.logger.log(`Nenhum contrato pendente para enviar para ${userId}`);
+      return;
+    }
+
+    for (const contract of pendingContracts) {
+      this.logger.log(`Enviando contrato para ${userId}: Valor ${contract.amount}`);
     }
   }
 
