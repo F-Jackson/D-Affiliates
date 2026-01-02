@@ -33,10 +33,12 @@ export class GrpcController {
       return {
         success: true,
         affiliateCode: resultAny.affiliateCode,
+        message: 'User registered successfully',
       };
     } catch (error) {
       return {
         success: false,
+        message: error.message || 'Registration failed',
       };
     }
   }
@@ -57,6 +59,7 @@ export class GrpcController {
     } catch (error) {
       return {
         success: false,
+        message: error.message || 'Syncing affiliate failed',
       };
     }
   }
@@ -74,6 +77,7 @@ export class GrpcController {
     } catch (error) {
       return {
         success: false,
+        message: error.message || 'Syncing transfers failed',
       };
     }
   }
@@ -88,11 +92,13 @@ export class GrpcController {
       );
       return {
         success: true,
+        message: 'Stats retrieved successfully',
         ...stats,
       };
     } catch (error) {
       return {
         success: false,
+        message: error.message || 'Getting stats failed',
       };
     }
   }
@@ -105,10 +111,12 @@ export class GrpcController {
       await this.affiliatedService.makeStatsPayment(request.userId);
       return {
         success: true,
+        message: 'Stats payment made successfully',
       };
     } catch (error) {
       return {
         success: false,
+        message: error.message || 'Making stats payment failed',
       };
     }
   }
@@ -132,6 +140,7 @@ export class GrpcController {
     } catch (error) {
       return {
         success: false,
+        message: error.message || 'Confirming contract failed',
       };
     }
   }
