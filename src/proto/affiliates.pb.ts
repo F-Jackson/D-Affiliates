@@ -39,24 +39,24 @@ export interface ConfirmContractRequest {
 
 export interface UserRegistrationResponse {
   success: boolean;
-  affiliateCode: string;
+  affiliateCode?: string;
 }
 
 export interface SyncAffiliateResponse {
   success: boolean;
-  message: string;
+  message?: string;
 }
 
 export interface SyncTransfersResponse {
   success: boolean;
-  message: string;
+  message?: string;
 }
 
 export interface AffiliatedStatsResponse {
   success: boolean;
-  affiliateCode: string;
-  status: string;
-  stats:
+  affiliateCode?: string;
+  status?: string;
+  stats?:
     | {
         totalEarnings: number | undefined;
         totalWithdrawn: number | undefined;
@@ -65,16 +65,16 @@ export interface AffiliatedStatsResponse {
         totalEarningsLastMonth: number | undefined;
       }
     | undefined;
-  numberOfAffiliates: number;
-  transfers: {
+  numberOfAffiliates?: number;
+  transfers?: {
     amount: number;
     status: 'pending' | 'completed' | 'failed';
     failureReason: string | undefined;
     details: string | undefined;
     completedDate: Date | undefined;
   }[];
-  nextPayment: Date | undefined;
-  constracts: {
+  nextPayment?: Date | undefined;
+  constracts?: {
     contractId: string;
     status: 'pending' | 'confirmed' | 'suspended';
     amount: number;
@@ -90,14 +90,14 @@ export interface PaymentResponse {
 
 export interface ContractResponse {
   contractId: string;
-  status: string;
-  message: string;
+  status?: string;
+  message?: string;
 }
 
 export interface ConfirmContractResponse {
   success: boolean;
-  message: string;
-  contractId: string;
+  message?: string;
+  contractId?: string;
 }
 
 export const AFFILIATES_SERVICE_NAME = 'AffiliatesService';
