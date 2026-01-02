@@ -43,13 +43,85 @@ const ALLOWED_AFFILIATE_COUNTRY = [
   'AE', // Emirados Árabes Unidos
 ];
 
+type DocumentRule = {
+  name: string;
+  regex: RegExp;
+  normalize: (value: string) => string;
+};
+
+const DOCUMENT_RULES_BY_COUNTRY: Record<string, DocumentRule> = {
+  BR: {
+    name: 'CPF',
+    regex: /^\d{11}$/,
+    normalize: (v) => v.replace(/\D/g, ''),
+  },
+
+  US: {
+    name: 'SSN',
+    regex: /^\d{9}$/,
+    normalize: (v) => v.replace(/\D/g, ''),
+  },
+
+  CA: {
+    name: 'SIN',
+    regex: /^\d{9}$/,
+    normalize: (v) => v.replace(/\D/g, ''),
+  },
+
+  UK: {
+    name: 'NINO',
+    regex: /^[A-Z]{2}\d{6}[A-Z]$/,
+    normalize: (v) => v.replace(/\s+/g, '').toUpperCase(),
+  },
+
+  AU: {
+    name: 'TFN',
+    regex: /^\d{8,9}$/,
+    normalize: (v) => v.replace(/\D/g, ''),
+  },
+
+  MX: {
+    name: 'CURP',
+    regex: /^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d$/,
+    normalize: (v) => v.toUpperCase(),
+  },
+
+  AR: {
+    name: 'DNI',
+    regex: /^\d{7,8}$/,
+    normalize: (v) => v.replace(/\D/g, ''),
+  },
+
+  PT: {
+    name: 'NIF',
+    regex: /^\d{9}$/,
+    normalize: (v) => v.replace(/\D/g, ''),
+  },
+
+  IN: {
+    name: 'Aadhaar',
+    regex: /^\d{12}$/,
+    normalize: (v) => v.replace(/\D/g, ''),
+  },
+
+  AE: {
+    name: 'Emirates ID',
+    regex: /^\d{15}$/,
+    normalize: (v) => v.replace(/\D/g, ''),
+  },
+};
+
 @Injectable()
 export class AffiliateService {
   private readonly logger = new Logger(AffiliateService.name);
 
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
-  async registerUser(userId: string, country: string, documentId: string): Promise<UserDocument> {
+  async registerUser(
+    userId: string,
+    country: string,
+    documentId: string,
+  ): Promise<UserDocument> {
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId é obrigatório');
     }
@@ -65,6 +137,29 @@ export class AffiliateService {
           `Afiliados do país ${country} não são aceitos`,
         );
       }
+
+      if (!documentId || documentId.trim().length === 0) {
+        throw new BadRequestException('documentId é obrigatório');
+      }
+
+      const docRule = DOCUMENT_RULES_BY_COUNTRY[country];
+      if (!docRule) {
+        throw new BadRequestException(
+          `Regras de documento não definidas para o país ${country}`,
+        );
+      }
+
+      const normalizedDocId = docRule.normalize(documentId);
+      if (!docRule.regex.test(normalizedDocId)) {
+        throw new BadRequestException(
+          `documentId inválido para o país ${country} (${docRule.name})`,
+        );
+      }
+
+      const documentHash = crypto
+        .createHash('sha256')
+        .update(normalizedDocId)
+        .digest('hex');
 
       const affiliateCode = this.generateAffiliateCode();
 
