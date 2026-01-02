@@ -84,9 +84,6 @@ class Contracts {
 
   @Prop({ type: [String] })
   transcationsIds?: string[];
-
-  @Prop({ type: Boolean, default: false })
-  facialRecognitionCompleted: boolean;
 }
 
 export const ContractsSchema = SchemaFactory.createForClass(Contracts);
