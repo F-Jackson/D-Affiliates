@@ -8,10 +8,14 @@ import { AffiliateService } from '../services/affiliate.service';
 import { StatsService } from '../services/stats.service';
 import { AdminController } from '../controllers/admin.controller';
 import { AffiliatesController } from 'src/controllers/grpc.controller';
+import { DbModule } from './db.module';
+import { RedisModule } from './redis.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    RedisModule,
+    DbModule
   ],
   providers: [
     AffiliatedService,
