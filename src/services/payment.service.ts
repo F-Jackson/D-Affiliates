@@ -152,6 +152,52 @@ export class PaymentService {
     }
   }
 
+  async adminConfirmContract(
+    userId: string,
+    contractId: string,
+    plataform: string,
+    taxAmount: number,
+  ) {
+    if (!userId || userId.trim().length === 0) {
+      throw new BadRequestException('userId é obrigatório');
+    }
+
+    try {
+      const user = await this.userModel.findOne({ userId });
+      if (!user) {
+        throw new NotFoundException(`Usuário ${userId} não encontrado`);
+      }
+
+      const contract = user.contracts.find((c) => c.contractId === contractId);
+      if (!contract) {
+        throw new NotFoundException(
+          `Contrato ${contractId} não encontrado para o usuário ${userId}`,
+        );
+      }
+
+      if (contract.status !== 'pending') {
+        throw new BadRequestException(
+          `Contrato ${contractId} não está pendente`,
+        );
+      }
+
+      contract.status = 'confirmed';
+      contract.confirmedAt = new Date();
+      contract.plataform = plataform;
+      contract.taxAmount = taxAmount;
+
+      const savedUser = await user.save();
+      this.logger.log(`Contrato confirmado para ${userId} pelo admin`);
+      return savedUser;
+    } catch (error) {
+      this.logger.error(
+        `Erro ao confirmar contrato para ${userId} pelo admin:`,
+        error.message,
+      );
+      throw error;
+    }
+  }
+
   async adminChangeTransfer(
     userId: string,
     transferId: string,
