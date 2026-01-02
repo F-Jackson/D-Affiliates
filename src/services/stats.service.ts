@@ -103,8 +103,22 @@ export class StatsService {
         );
       }
 
+      let cdId = crypto.randomBytes(16).toString('hex').toUpperCase();
+      const tries = 32;
+
+      while (true) {
+        const existingContract = user.contracts.find((c) => c.contractId === cdId);
+        if (!existingContract) break;
+
+        if (tries <= 0) {
+          throw new Error('Não foi possível gerar um ID único para o contrato');
+        }
+
+        cdId = crypto.randomBytes(16).toString('hex').toUpperCase();
+      }
+
       const newContract = {
-        contractId: crypto.randomBytes(8).toString('hex').toUpperCase(),
+        contractId: cdId,
         status: 'pending' as const,
         amount: earnedAmount,
         secretCode: crypto.randomBytes(4).toString('hex').toUpperCase(),
