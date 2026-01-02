@@ -7,7 +7,7 @@ import { PaymentService } from '../services/payment.service';
 import { AffiliateService } from '../services/affiliate.service';
 import { StatsService } from '../services/stats.service';
 import { AdminController } from 'src/controllers/admin.controller';
-import { AffiliatesController } from 'src/controllers/affiliates.controller';
+import { AffiliatesController } from 'src/controllers/grpc.controller';
 
 @Module({
   imports: [

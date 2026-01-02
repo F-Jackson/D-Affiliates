@@ -17,7 +17,7 @@ import type {
 import { AffiliatedService } from '../services/affiliated.service';
 
 @Controller()
-export class GrpcController {
+export class AffiliatesController {
   constructor(private readonly affiliatedService: AffiliatedService) {}
 
   @GrpcMethod('AffiliatesService', 'RegisterUser')
