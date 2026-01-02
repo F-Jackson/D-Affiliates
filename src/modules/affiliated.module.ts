@@ -1,6 +1,11 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '../schemas/user.schema';
+import { Affiliated, AffiliatedSchema } from '../schemas/affiliated.schema';
+import { Contracts, ContractsSchema } from '../schemas/contracts.schema';
+import { Stats, StatsSchema } from '../schemas/stats.schema';
+import { Transaction, TransactionSchema } from '../schemas/transaction.schema';
+import { Transfer, TransferSchema } from '../schemas/transfer.schema';
 import { AffiliatedService } from '../services/affiliated.service';
 import { ContractService } from '../services/contract.service';
 import { PaymentService } from '../services/payment.service';
@@ -14,7 +19,14 @@ import IdempotencyCheckService from 'src/security/idempotency-check.service';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeature([
+      { name: User.name, schema: UserSchema },
+      { name: Affiliated.name, schema: AffiliatedSchema },
+      { name: Contracts.name, schema: ContractsSchema },
+      { name: Stats.name, schema: StatsSchema },
+      { name: Transaction.name, schema: TransactionSchema },
+      { name: Transfer.name, schema: TransferSchema },
+    ]),
     RedisModule,
     DbModule,
   ],
