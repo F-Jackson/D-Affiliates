@@ -108,7 +108,7 @@ export class AffiliatedService {
       }
 
       user.nextPayment = new Date();
-      user.affiliateds.push({ userId, transactions: [] });
+      user.affiliateds.push({ userId, transactions: [], createdAt: new Date() });
       await user.save();
 
       this.logger.log(`Afiliado ${userId} sincronizado`);
@@ -285,9 +285,7 @@ export class AffiliatedService {
     }
   }
 
-  async makeContract(
-    userId: string,
-  ): Promise<UserDocument> {
+  async makeContract(userId: string): Promise<UserDocument> {
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId é obrigatório');
     }
@@ -310,25 +308,29 @@ export class AffiliatedService {
         );
       }
 
-      const now = new Date();
-    if (user.nextPayment && user.nextPayment > now) {
-      this.logger.log(
-        `Pagamento de estatísticas para ${userId} já está agendado em ${user.nextPayment}`,
-      );
-      throw new Error('');
-    }
-
+      // Verificar se há ganhos disponíveis
+      const earnedAmount = user.stats?.totalEarningsLastMonth || 0;
+      if (earnedAmount <= 0) {
+        throw new BadRequestException(
+          'Nenhum ganho disponível para criar contrato',
+        );
+      }
 
       const newContract = {
-        status: 'pending',
-        amount: user.stats?.totalEarningsLastMonth || 0,
-        createdAt: new Date(),
+        contractId: crypto.randomBytes(8).toString('hex').toUpperCase(),
+        status: 'pending' as const,
+        amount: earnedAmount,
         secretCode: crypto.randomBytes(4).toString('hex').toUpperCase(),
-      }
+        transcationsIds: user.stats?.usedTransactionIds || [],
+        facialRecognitionCompleted: false,
+      };
 
       user.contracts.push(newContract);
 
       const savedUser = await user.save();
+      this.logger.log(
+        `Contrato criado para ${userId} com valor de R$ ${earnedAmount}`,
+      );
       return savedUser;
     } catch (error) {
       this.logger.error(

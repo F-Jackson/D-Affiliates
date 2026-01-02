@@ -94,9 +94,6 @@ class Affiliated {
   transactions: Transaction[];
 
   @Prop({ type: Date })
-  firstTransactionDate?: Date;
-
-  @Prop({ type: Date })
   createdAt: Date;
 }
 
