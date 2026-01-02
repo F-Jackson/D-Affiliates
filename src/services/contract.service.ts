@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as crypto from 'crypto';
 import PDFDocument from 'pdfkit';
-import { UserDocument } from '../schemas/app.schema';
+import { UserDocument } from '../schemas/user.schema';
 import { readFileSync } from 'fs';
 import { SignPdf } from 'node-signpdf';
 import { P12Signer } from '@signpdf/signer-p12';

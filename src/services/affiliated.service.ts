@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User, UserDocument } from '../schemas/app.schema';
+import { User, UserDocument } from '../schemas/user.schema';
 import { ContractService } from './contract.service';
 import { PaymentService } from './payment.service';
 import { AffiliateService } from './affiliate.service';
@@ -116,4 +116,4 @@ export class AffiliatedService {
 
   async confirmContract(userId: string, code: string): Promise<UserDocument> {
     return this.paymentService.confirmContract(userId, code);
-  }
+  }}

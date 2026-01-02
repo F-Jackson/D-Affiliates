@@ -8,7 +8,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as crypto from 'crypto';
-import { User, UserDocument } from '../schemas/app.schema';
+import { User, UserDocument } from '../schemas/user.schema';
 
 
 const ALLOWED_AFFILIATE_COUNTRY = [
