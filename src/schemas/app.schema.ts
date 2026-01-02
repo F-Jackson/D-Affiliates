@@ -71,9 +71,6 @@ class Contracts {
   secretCode: string;
 
   @Prop({ type: String })
-  contractPDFUrl?: string;
-
-  @Prop({ type: String })
   assImageUrl?: string;
 
   @Prop({ type: String })

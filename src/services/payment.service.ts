@@ -86,7 +86,7 @@ export class PaymentService {
     await user.save();
   }
 
-  async confirmContract(userId: string, code: string, contractId: string): Promise<UserDocument> {
+  async confirmContract(userId: string, code: string, contractId: string, assImg: Buffer): Promise<UserDocument> {
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId é obrigatório');
     }
