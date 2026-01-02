@@ -469,7 +469,12 @@ export class AffiliatedService {
             align: 'center',
           });
 
-        pdf.fontSize(9).text(`Hash: ${crypto.randomBytes(16).toString('hex')}`, {
+        const contractHash = crypto
+          .createHash('sha3-256')
+          .update(JSON.stringify(contract))
+          .digest('hex');
+
+        pdf.fontSize(9).text(`Hash: ${contractHash}`, {
           align: 'center',
         });
 
