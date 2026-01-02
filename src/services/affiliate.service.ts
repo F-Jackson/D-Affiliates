@@ -61,7 +61,6 @@ export class AffiliateService {
 
       const newUser = new this.userModel({
         userId,
-        country,
         affiliateCode,
         status: 'active',
         affiliateds: [],
