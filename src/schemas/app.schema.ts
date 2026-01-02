@@ -96,7 +96,8 @@ class Affiliated {
   @Prop({ type: Date })
   firstTransactionDate?: Date;
 
-  createAt?: Date;
+  @Prop({ type: Date })
+  createdAt: Date;
 }
 
 export const AffiliatedSchema = SchemaFactory.createForClass(Affiliated);
