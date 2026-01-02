@@ -157,7 +157,7 @@ export class PaymentService {
       throw new NotFoundException(`Usuário ${userId} não encontrado`);
     }
 
-    const transfer = user.transfers.find(t => t._id && t._id.toString() === transferId);
+    const transfer = user.transfers.find(t => t._id?.toString() === transferId);
     if (!transfer) {
       throw new NotFoundException(`Transferência ${transferId} não encontrada para o usuário ${userId}`);
     }

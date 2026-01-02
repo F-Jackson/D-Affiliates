@@ -92,6 +92,8 @@ export const AffiliatedSchema = SchemaFactory.createForClass(Affiliated);
 
 @Schema({ timestamps: true })
 class Transfer {
+  _id?: string;
+
   @Prop({ required: true, type: Number, min: 0.01 })
   amount: number;
 
@@ -107,7 +109,7 @@ class Transfer {
 
   @Prop({ type: String })
   paymentProofUrl?: string;
-  
+
   @Prop({ type: String })
   internalPaymentProofUrl?: string;
 
