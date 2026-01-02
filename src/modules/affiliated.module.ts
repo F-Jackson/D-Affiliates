@@ -15,7 +15,7 @@ import { RedisModule } from './redis.module';
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     RedisModule,
-    DbModule
+    DbModule,
   ],
   providers: [
     AffiliatedService,
