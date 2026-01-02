@@ -165,6 +165,9 @@ export class User {
   @Prop({ required: true, unique: true, index: true, type: String })
   userId: string;
 
+  @Prop({ required: true, unique: true, type: String })
+  documentId: string;
+
   @Prop({
     required: true,
     unique: true,
