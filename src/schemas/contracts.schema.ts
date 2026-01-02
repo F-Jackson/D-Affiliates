@@ -17,10 +17,7 @@ export class Contracts {
     ],
     default: 'pending',
   })
-  status:
-    | 'pending'
-    | 'confirmed'
-    | 'suspended';
+  status: 'pending' | 'confirmed' | 'suspended';
 
   @Prop({ type: Date })
   confirmedAt?: Date;

@@ -10,7 +10,6 @@ import { Model } from 'mongoose';
 import * as crypto from 'crypto';
 import { User, UserDocument } from '../schemas/user.schema';
 
-
 const ALLOWED_AFFILIATE_COUNTRY = [
   // Tier 1 — Criadores profissionais / alta maturidade em afiliados
   'US', // Estados Unidos (marketing de performance avançado)
@@ -50,10 +49,7 @@ export class AffiliateService {
 
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
-  async registerUser(
-    userId: string,
-    country: string,
-  ): Promise<UserDocument> {
+  async registerUser(userId: string, country: string) {
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId é obrigatório');
     }
@@ -90,7 +86,7 @@ export class AffiliateService {
     }
   }
 
-  async syncAffiliate(userId: string, affiliateCode: string): Promise<void> {
+  async syncAffiliate(userId: string, affiliateCode: string) {
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId é obrigatório');
     }
@@ -131,7 +127,7 @@ export class AffiliateService {
     }
   }
 
-  async syncTransfers(userId: string): Promise<UserDocument> {
+  async syncTransfers(userId: string) {
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId é obrigatório');
     }
@@ -204,7 +200,7 @@ export class AffiliateService {
     return [];
   }
 
-  private generateAffiliateCode(): string {
+  private generateAffiliateCode() {
     return 'AFF_' + crypto.randomBytes(12).toString('hex').toUpperCase();
   }
 }

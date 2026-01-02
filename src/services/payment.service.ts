@@ -15,7 +15,7 @@ export class PaymentService {
 
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
-  async makeStatsPayment(userId: string): Promise<void> {
+  async makeStatsPayment(userId: string) {
     const user = await this.userModel.findOne({ userId });
     if (!user) {
       throw new NotFoundException(`Usuário ${userId} não encontrado`);
@@ -86,7 +86,12 @@ export class PaymentService {
     await user.save();
   }
 
-  async confirmContract(userId: string, code: string, paymentMethod: 'bank_transfer' | 'paypal' | 'crypto', contractId: string): Promise<UserDocument> {
+  async confirmContract(
+    userId: string,
+    code: string,
+    paymentMethod: 'bank_transfer' | 'paypal' | 'crypto',
+    contractId: string,
+  ) {
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId é obrigatório');
     }
@@ -105,13 +110,17 @@ export class PaymentService {
         throw new NotFoundException('Nenhum contrato pendente encontrado');
       }
 
-      const contract = user.contracts.find((c => c.contractId === contractId));
+      const contract = user.contracts.find((c) => c.contractId === contractId);
       if (!contract) {
-        throw new NotFoundException(`Contrato ${contractId} não encontrado para o usuário ${userId}`);
+        throw new NotFoundException(
+          `Contrato ${contractId} não encontrado para o usuário ${userId}`,
+        );
       }
 
       if (contract.status !== 'pending') {
-        throw new BadRequestException(`Contrato ${contractId} não está pendente`);
+        throw new BadRequestException(
+          `Contrato ${contractId} não está pendente`,
+        );
       }
 
       if (contract.secretCode !== code) {
@@ -143,29 +152,38 @@ export class PaymentService {
     }
   }
 
-  async adminChangeTransfer(userId: string, transferId: string, newStatus: {
-    failedReason: string;
-    success?: {
-      paymentProofUrl: string;
-      internalPaymentProofUrl?: string;
-      completedDate: Date;
+  async adminChangeTransfer(
+    userId: string,
+    transferId: string,
+    newStatus: {
+      failedReason: string;
+      success?: {
+        paymentProofUrl: string;
+        internalPaymentProofUrl?: string;
+        completedDate: Date;
+      };
+      detail?: string;
     },
-    detail?: string
-  }) {
+  ) {
     const user = await this.userModel.findOne({ userId });
     if (!user) {
       throw new NotFoundException(`Usuário ${userId} não encontrado`);
     }
 
-    const transfer = user.transfers.find(t => t._id?.toString() === transferId);
+    const transfer = user.transfers.find(
+      (t) => t._id?.toString() === transferId,
+    );
     if (!transfer) {
-      throw new NotFoundException(`Transferência ${transferId} não encontrada para o usuário ${userId}`);
+      throw new NotFoundException(
+        `Transferência ${transferId} não encontrada para o usuário ${userId}`,
+      );
     }
 
     if (newStatus.success) {
       transfer.status = 'completed';
       transfer.paymentProofUrl = newStatus.success.paymentProofUrl;
-      transfer.internalPaymentProofUrl = newStatus.success.internalPaymentProofUrl;
+      transfer.internalPaymentProofUrl =
+        newStatus.success.internalPaymentProofUrl;
       transfer.completedDate = newStatus.success.completedDate;
     } else {
       transfer.status = 'failed';
@@ -173,6 +191,8 @@ export class PaymentService {
     }
 
     await user.save();
-    this.logger.log(`Transferência ${transferId} atualizada para o usuário ${userId}`);
+    this.logger.log(
+      `Transferência ${transferId} atualizada para o usuário ${userId}`,
+    );
   }
 }

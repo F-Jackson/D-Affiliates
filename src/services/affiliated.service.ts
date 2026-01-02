@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../schemas/user.schema';
@@ -10,11 +6,6 @@ import { ContractService } from './contract.service';
 import { PaymentService } from './payment.service';
 import { AffiliateService } from './affiliate.service';
 import { StatsService } from './stats.service';
-
-interface PaymentMethod {
-  type: 'bank_transfer' | 'paypal' | 'crypto';
-  details: string;
-}
 
 @Injectable()
 export class AffiliatedService {
@@ -28,8 +19,8 @@ export class AffiliatedService {
     private statsService: StatsService,
   ) {}
 
-  async registerUser(userId: string): Promise<UserDocument> {
-    return this.affiliateService.registerUser(userId);
+  async registerUser(userId: string, country: string): Promise<UserDocument> {
+    return this.affiliateService.registerUser(userId, country);
   }
 
   async getAffiliatedStats(userId: string): Promise<any> {
@@ -116,4 +107,5 @@ export class AffiliatedService {
 
   async confirmContract(userId: string, code: string): Promise<UserDocument> {
     return this.paymentService.confirmContract(userId, code);
-  }}
+  }
+}

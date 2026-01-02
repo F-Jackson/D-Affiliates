@@ -16,7 +16,7 @@ export class StatsService {
 
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
-  async getAffiliatedStats(userId: string): Promise<any> {
+  async getAffiliatedStats(userId: string) {
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId é obrigatório');
     }
@@ -37,6 +37,7 @@ export class StatsService {
         numberOfAffiliates: user.affiliateds.length,
         totalTransfers: user.transfers.length,
         nextPayment: user.nextPayment,
+        constracts: user.contracts,
       };
     } catch (error) {
       this.logger.error(
@@ -47,7 +48,7 @@ export class StatsService {
     }
   }
 
-  async sendContractPendingToAffiliate(userId: string): Promise<void> {
+  async sendContractPendingToAffiliate(userId: string) {
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId é obrigatório');
     }
@@ -72,7 +73,7 @@ export class StatsService {
     }
   }
 
-  async makeContract(userId: string): Promise<UserDocument> {
+  async makeContract(userId: string) {
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId é obrigatório');
     }
@@ -107,7 +108,9 @@ export class StatsService {
       const tries = 500000;
 
       while (true) {
-        const existingContract = user.contracts.find((c) => c.contractId === cdId);
+        const existingContract = user.contracts.find(
+          (c) => c.contractId === cdId,
+        );
         if (!existingContract) break;
 
         if (tries <= 0) {
