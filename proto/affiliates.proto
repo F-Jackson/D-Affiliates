@@ -69,7 +69,7 @@ message Stats {
 
 message Transfer {
   double amount = 1;
-  TransferStatus status = 2;
+  string status = 2;
   string failure_reason = 3;
   string details = 4;
   google.protobuf.Timestamp completed_date = 5;
