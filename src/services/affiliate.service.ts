@@ -49,68 +49,6 @@ type DocumentRule = {
   normalize: (value: string) => string;
 };
 
-const DOCUMENT_RULES_BY_COUNTRY: Record<string, DocumentRule> = {
-  BR: {
-    name: 'CPF',
-    regex: /^\d{11}$/,
-    normalize: (v) => v.replace(/\D/g, ''),
-  },
-
-  US: {
-    name: 'SSN',
-    regex: /^\d{9}$/,
-    normalize: (v) => v.replace(/\D/g, ''),
-  },
-
-  CA: {
-    name: 'SIN',
-    regex: /^\d{9}$/,
-    normalize: (v) => v.replace(/\D/g, ''),
-  },
-
-  UK: {
-    name: 'NINO',
-    regex: /^[A-Z]{2}\d{6}[A-Z]$/,
-    normalize: (v) => v.replace(/\s+/g, '').toUpperCase(),
-  },
-
-  AU: {
-    name: 'TFN',
-    regex: /^\d{8,9}$/,
-    normalize: (v) => v.replace(/\D/g, ''),
-  },
-
-  MX: {
-    name: 'CURP',
-    regex: /^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d$/,
-    normalize: (v) => v.toUpperCase(),
-  },
-
-  AR: {
-    name: 'DNI',
-    regex: /^\d{7,8}$/,
-    normalize: (v) => v.replace(/\D/g, ''),
-  },
-
-  PT: {
-    name: 'NIF',
-    regex: /^\d{9}$/,
-    normalize: (v) => v.replace(/\D/g, ''),
-  },
-
-  IN: {
-    name: 'Aadhaar',
-    regex: /^\d{12}$/,
-    normalize: (v) => v.replace(/\D/g, ''),
-  },
-
-  AE: {
-    name: 'Emirates ID',
-    regex: /^\d{15}$/,
-    normalize: (v) => v.replace(/\D/g, ''),
-  },
-};
-
 @Injectable()
 export class AffiliateService {
   private readonly logger = new Logger(AffiliateService.name);
@@ -155,7 +93,7 @@ export class AffiliateService {
           `documentId inválido para o país ${country} (${docRule.name})`,
         );
       }
-      
+
       const affiliateCode = this.generateAffiliateCode();
 
       const newUser = new this.userModel({
