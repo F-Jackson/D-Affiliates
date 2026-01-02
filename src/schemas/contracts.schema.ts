@@ -31,6 +31,12 @@ export class Contracts {
   @Prop({ type: String })
   secretCode: string;
 
+  @Prop({ type: String })
+  plataform?: string;
+
+  @Prop({ type: Number, default: false })
+  taxAmount?: number;
+
   @Prop({ type: [String] })
   transcationsIds?: string[];
 }
