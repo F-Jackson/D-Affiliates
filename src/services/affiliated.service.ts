@@ -217,28 +217,26 @@ export class AffiliatedService {
     const numberOfAffiliates = affiliatesToCalculate.length;
 
     const usedTransactionIds = user.transfers
-      .flatMap((t) => t. || [])
+      .flatMap((t) => t.usedTransactionIds || [])
       .filter((id) => id);
-    
 
-    const lastMonthDate = new Date(
-      now.getFullYear(),
-      now.getMonth() - 1,
-      now.getDate(),
-    );
+      const notUsedTransactions = affiliatesToCalculate
+        .flatMap((aff) => aff.transactions)
+        .filter((t) => !usedTransactionIds.includes(t.id));
+
     const totalEarningsLastMonth = affiliatesToCalculate.reduce((sum, aff) => {
       return (
         sum +
         aff.transactions
-          .filter((t) => new Date(t.date) >= lastMonthDate && t.status === 'completed' &&!usedTransactionIds.includes(t.id))
+          .filter((t) => t.status === 'completed' &&!usedTransactionIds.includes(t.id))
           .reduce((s, t) => s + t.amount, 0)
       );
     }, 0);
 
-    const totalTransactionsLastMonth = user.affiliateds.reduce((sum, aff) => {
+    const totalTransactionsLastMonth = affiliatesToCalculate.reduce((sum, aff) => {
       return (
         sum +
-        aff.transactions.filter((t) => new Date(t.date) >= lastMonthDate).length
+        aff.transactions.filter((t) => !usedTransactionIds.includes(t.id)).length
       );
     }, 0);
 
@@ -253,6 +251,7 @@ export class AffiliatedService {
       numberOfAffiliates,
       totalEarningsLastMonth,
       totalTransactionsLastMonth,
+      usedTransactionIds: [],
     };
 
     const nextPaymentDate = new Date(

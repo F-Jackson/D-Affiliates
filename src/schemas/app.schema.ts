@@ -156,6 +156,9 @@ export class Stats {
 
   @Prop({ type: Number })
   totalTransactionsLastMonth?: number;
+
+  @Prop({ type: [String] })
+  usedTransactionIds?: string[];
 }
 
 export const StatsSchema = SchemaFactory.createForClass(Stats);
