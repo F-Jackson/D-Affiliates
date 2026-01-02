@@ -43,6 +43,49 @@ class Transaction {
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);
 
 @Schema({ timestamps: true })
+class Contracts {
+  @Prop({ required: true, type: String })
+  contractId: string;
+
+  @Prop({
+    type: String,
+    enum: [
+      'waiting-payment',
+      'paid',
+      'parcial-paid',
+      'pending',
+      'terminated',
+      'suspended',
+    ],
+    default: 'pending',
+  })
+  status: string;
+
+  @Prop({ required: true, type: Number, min: 0.01 })
+  amount: number;
+
+  @Prop({ type: Number, min: 0, max: 1, default: 0.1 })
+  commissionRate: number;
+
+  @Prop({ type: String })
+  contractPDFUrl?: string;
+
+  @Prop({ type: String })
+  assImageUrl?: string;
+
+  @Prop({ type: String })
+  paymentMethod?: string;
+
+  @Prop({ type: [String] })
+  transcationsIds?: string[];
+
+  @Prop({ type: Boolean, default: false })
+  facialRecognitionCompleted: boolean;
+}
+
+export const ContractsSchema = SchemaFactory.createForClass(Contracts);
+
+@Schema({ timestamps: true })
 class Affiliated {
   @Prop({ required: true, type: String, minlength: 1 })
   userId: string;
@@ -54,8 +97,6 @@ class Affiliated {
   firstTransactionDate?: Date;
 
   createAt?: Date;
-
-  contracts: Contracts[];
 }
 
 export const AffiliatedSchema = SchemaFactory.createForClass(Affiliated);
@@ -140,6 +181,9 @@ export class User {
 
   @Prop({ type: [TransferSchema], default: [] })
   transfers: Transfer[];
+
+  @Prop({ type: [ContractsSchema], default: [] })
+  contracts: Contracts[];
 
   @Prop({
     type: String,

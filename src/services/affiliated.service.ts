@@ -11,7 +11,6 @@ import { Model } from 'mongoose';
 import * as crypto from 'crypto';
 import { User, UserDocument } from '../schemas/app.schema';
 
-
 interface PaymentMethod {
   type: 'bank_transfer' | 'paypal' | 'crypto';
   details: string;
@@ -202,11 +201,12 @@ export class AffiliatedService {
 
     const affiliatesToNotify = user.affiliateds.filter((aff) => {
       return (
-        !lastTransferDate ||
-        (aff.transactions.some(
-          (tx) => new Date(tx.date) > lastTransferDate,
-        ))
-      ) && aff.createdAt <= threeMonth;
+        (!lastTransferDate ||
+          aff.transactions.some(
+            (tx) => new Date(tx.date) > lastTransferDate,
+          )) &&
+        aff.createdAt <= threeMonth
+      );
     });
 
     for (const aff of affiliatesToNotify) {
@@ -248,7 +248,7 @@ export class AffiliatedService {
         );
       }
 
-      if (user.status=== 'suspended') {
+      if (user.status === 'suspended') {
         throw new UnauthorizedException(
           'Usuário suspenso não pode fazer contrato',
         );
