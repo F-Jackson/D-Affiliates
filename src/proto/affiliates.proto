@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package affiliates;
+
+service AffiliatesService {
+  rpc RegisterUser (RegisterUserRequest) returns (UserRegistrationResponse);
+  rpc SyncAffiliate (SyncAffiliateRequest) returns (SyncAffiliateResponse);
+  rpc SyncTransfers (SyncTransfersRequest) returns (SyncTransfersResponse);
+  rpc GetAffiliatedStats (GetAffiliatedStatsRequest) returns (AffiliatedStatsResponse);
+  rpc MakeStatsPayment (MakeStatsPaymentRequest) returns (PaymentResponse);
+  rpc MakeContract (MakeContractRequest) returns (ContractResponse);
+  rpc ConfirmContract (ConfirmContractRequest) returns (ConfirmContractResponse);
+}
+
+// Requests
+message RegisterUserRequest {
+  string user_id = 1;
+  string country = 2;
+}
+
+message SyncAffiliateRequest {
+  string user_id = 1;
+  string affiliate_code = 2;
+}
+
+message SyncTransfersRequest {
+  string user_id = 1;
+}
+
+message GetAffiliatedStatsRequest {
+  string user_id = 1;
+}
+
+message MakeStatsPaymentRequest {
+  string user_id = 1;
+}
+
+message MakeContractRequest {
+  string user_id = 1;
+}
+
+message ConfirmContractRequest {
+  string user_id = 1;
+  string contract_id = 2;
+  string code = 3;
+  string payment_method = 4;
+}
+
+// Responses
+message UserRegistrationResponse {
+  string id = 1;
+  string user_id = 2;
+  string affiliate_code = 3;
+  string status = 4;
+  string created_at = 5;
+}
+
+message SyncAffiliateResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message SyncTransfersResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message AffiliatedStatsResponse {
+  string user_id = 1;
+  double total_earnings = 2;
+  double total_withdrawn = 3;
+  double pending_withdrawals = 4;
+  int32 number_of_affiliates = 5;
+}
+
+message PaymentResponse {
+  bool success = 1;
+  string message = 2;
+  string transaction_id = 3;
+}
+
+message ContractResponse {
+  string contract_id = 1;
+  string status = 2;
+  string message = 3;
+}
+
+message ConfirmContractResponse {
+  bool success = 1;
+  string message = 2;
+  string contract_id = 3;
+}
