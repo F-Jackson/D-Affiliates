@@ -29,7 +29,7 @@ export class AffiliatesController {
 
   private validateApiKey(context: { metadata: Metadata }): void {
     const apiKey = context.metadata.get('x-api-key')?.[0]?.toString();
-    const expectedApiKey = this.configService.get<string>('MAILER_API_KEY');
+    const expectedApiKey = this.configService.get<string>('AFFILIATES_API_KEY');
 
     if (!apiKey) {
       throw new Error('API-Key is required');
