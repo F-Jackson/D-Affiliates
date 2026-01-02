@@ -379,7 +379,7 @@ export class AffiliatedService {
         pdf
           .fontSize(10)
           .font('Helvetica')
-          .text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, {
+          .text(`Unix Date: ${Math.floor(Date.now() / 1000)}`, {
             align: 'center',
           });
 
@@ -393,10 +393,10 @@ export class AffiliatedService {
           .fontSize(10)
           .font('Helvetica')
           .text(`ID do Contrato: ${contract.contractId}`, { indent: 20 });
-        pdf.text(`Valor: R$ ${contract.amount.toFixed(2)}`, { indent: 20 });
+        pdf.text(`Value: R$ ${contract.amount.toFixed(2)}`, { indent: 20 });
         pdf.text(`Status: ${contract.status.toUpperCase()}`, { indent: 20 });
         pdf.text(
-          `Código Secreto: ${contract.secretCode}`,
+          `Confirmation Code: ${contract.secretCode}`,
           { indent: 20 },
         );
 
@@ -406,10 +406,6 @@ export class AffiliatedService {
         pdf.fontSize(12).font('Helvetica-Bold').text('INFORMAÇÕES DO AFILIADO');
         pdf.moveDown(0.3);
 
-        pdf
-          .fontSize(10)
-          .font('Helvetica')
-          .text(`ID do Usuário: ${user.userId}`, { indent: 20 });
         pdf.text(`Código de Afiliado: ${user.affiliateCode}`, {
           indent: 20,
         });
