@@ -71,6 +71,14 @@ export class AffiliatesController {
     request: RegisterUserRequest,
     @Ctx() context: { metadata: Metadata },
   ): Promise<UserRegistrationResponse> {
+    this.validateApiKey(context);
+    const idempotencyKey = this.getIdempotencyKey(context);
+    try {
+      await this.handleIdempotency('getSub', idempotencyKey);
+    } catch (e: any) {
+      return { success: true, message: 'Request already processed'};
+    }
+
     try {
       const result = await this.affiliatedService.registerUser(
         request.userId,
@@ -95,6 +103,14 @@ export class AffiliatesController {
     request: SyncAffiliateRequest,
     @Ctx() context: { metadata: Metadata },
   ): Promise<SyncAffiliateResponse> {
+    this.validateApiKey(context);
+    const idempotencyKey = this.getIdempotencyKey(context);
+    try {
+      await this.handleIdempotency('getSub', idempotencyKey);
+    } catch (e: any) {
+      return { success: true, message: 'Request already processed'};
+    }
+
     try {
       await this.affiliatedService.syncAffiliate(
         request.userId,
@@ -117,6 +133,14 @@ export class AffiliatesController {
     request: SyncTransfersRequest,
     @Ctx() context: { metadata: Metadata },
   ): Promise<SyncTransfersResponse> {
+    this.validateApiKey(context);
+    const idempotencyKey = this.getIdempotencyKey(context);
+    try {
+      await this.handleIdempotency('getSub', idempotencyKey);
+    } catch (e: any) {
+      return { success: true, message: 'Request already processed'};
+    }
+
     try {
       await this.affiliatedService.syncTransfers(request.userId);
       return {
@@ -136,6 +160,14 @@ export class AffiliatesController {
     request: GetAffiliatedStatsRequest,
     @Ctx() context: { metadata: Metadata },
   ): Promise<AffiliatedStatsResponse> {
+    this.validateApiKey(context);
+    const idempotencyKey = this.getIdempotencyKey(context);
+    try {
+      await this.handleIdempotency('getSub', idempotencyKey);
+    } catch (e: any) {
+      return { success: true, message: 'Request already processed'};
+    }
+
     try {
       const stats = await this.affiliatedService.getAffiliatedStats(
         request.userId,
@@ -158,6 +190,14 @@ export class AffiliatesController {
     request: MakeStatsPaymentRequest,
     @Ctx() context: { metadata: Metadata },
   ): Promise<PaymentResponse> {
+    this.validateApiKey(context);
+    const idempotencyKey = this.getIdempotencyKey(context);
+    try {
+      await this.handleIdempotency('getSub', idempotencyKey);
+    } catch (e: any) {
+      return { success: true, message: 'Request already processed'};
+    }
+
     try {
       await this.affiliatedService.makeStatsPayment(request.userId);
       return {
@@ -177,6 +217,14 @@ export class AffiliatesController {
     request: ConfirmContractRequest,
     @Ctx() context: { metadata: Metadata },
   ): Promise<ConfirmContractResponse> {
+    this.validateApiKey(context);
+    const idempotencyKey = this.getIdempotencyKey(context);
+    try {
+      await this.handleIdempotency('getSub', idempotencyKey);
+    } catch (e: any) {
+      return { success: true, message: 'Request already processed'};
+    }
+
     try {
       await this.affiliatedService.confirmContract(
         request.userId,
