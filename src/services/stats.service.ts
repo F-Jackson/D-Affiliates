@@ -53,13 +53,15 @@ export class StatsService {
       return {
         affiliateCode: user.affiliateCode,
         status: user.status,
-        stats: stats ? {
-          totalEarnings: stats.totalEarnings,
-          totalWithdrawn: stats.totalWithdrawn,
-          pendingWithdrawals: stats.pendingWithdrawals,
-          numberOfAffiliates: stats.numberOfAffiliates,
-          totalEarningsLastMonth: stats.totalEarningsLastMonth,
-        } : undefined,
+        stats: stats
+          ? {
+              totalEarnings: stats.totalEarnings,
+              totalWithdrawn: stats.totalWithdrawn,
+              pendingWithdrawals: stats.pendingWithdrawals,
+              numberOfAffiliates: stats.numberOfAffiliates,
+              totalEarningsLastMonth: stats.totalEarningsLastMonth,
+            }
+          : undefined,
         numberOfAffiliates: user.affiliateds.length,
         transfers: user.transfers.map((t) => ({
           amount: t.amount,

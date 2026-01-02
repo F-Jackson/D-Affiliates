@@ -6,14 +6,12 @@ import type {
   SyncTransfersRequest,
   GetAffiliatedStatsRequest,
   MakeStatsPaymentRequest,
-  MakeContractRequest,
   ConfirmContractRequest,
   UserRegistrationResponse,
   SyncAffiliateResponse,
   SyncTransfersResponse,
   AffiliatedStatsResponse,
   PaymentResponse,
-  ContractResponse,
   ConfirmContractResponse,
 } from '../proto/affiliates.pb';
 import { AffiliatedService } from '../services/affiliated.service';
@@ -32,6 +30,7 @@ export class GrpcController {
     );
     const resultAny = result;
     return {
+      success: true,
       affiliateCode: resultAny.affiliateCode,
     };
   }
@@ -68,7 +67,10 @@ export class GrpcController {
     const stats = await this.affiliatedService.getAffiliatedStats(
       request.userId,
     );
-    return stats;
+    return {
+      success: true,
+      ...stats,
+    };
   }
 
   @GrpcMethod('AffiliatesService', 'MakeStatsPayment')
@@ -78,21 +80,6 @@ export class GrpcController {
     await this.affiliatedService.makeStatsPayment(request.userId);
     return {
       success: true,
-      message: 'Payment processed successfully',
-      transactionId: `txn_${Date.now()}`,
-    };
-  }
-
-  @GrpcMethod('AffiliatesService', 'MakeContract')
-  async makeContract(request: MakeContractRequest): Promise<ContractResponse> {
-    const result = await this.affiliatedService.adminMakeContract(
-      request.userId,
-    );
-    const resultAny = result as any;
-    return {
-      contractId: resultAny.contracts?.[0]?._id?.toString() || '',
-      status: 'pending',
-      message: 'Contract created successfully',
     };
   }
 

@@ -38,6 +38,7 @@ export interface ConfirmContractRequest {
 }
 
 export interface UserRegistrationResponse {
+  success: boolean;
   affiliateCode: string;
 }
 
@@ -52,17 +53,39 @@ export interface SyncTransfersResponse {
 }
 
 export interface AffiliatedStatsResponse {
-  userId: string;
-  totalEarnings: number;
-  totalWithdrawn: number;
-  pendingWithdrawals: number;
+  success: boolean;
+  affiliateCode: string;
+  status: string;
+  stats:
+    | {
+        totalEarnings: number | undefined;
+        totalWithdrawn: number | undefined;
+        pendingWithdrawals: number | undefined;
+        numberOfAffiliates: number | undefined;
+        totalEarningsLastMonth: number | undefined;
+      }
+    | undefined;
   numberOfAffiliates: number;
+  transfers: {
+    amount: number;
+    status: 'pending' | 'completed' | 'failed';
+    failureReason: string | undefined;
+    details: string | undefined;
+    completedDate: Date | undefined;
+  }[];
+  nextPayment: Date | undefined;
+  constracts: {
+    contractId: string;
+    status: 'pending' | 'confirmed' | 'suspended';
+    amount: number;
+    confirmedAt: Date | undefined;
+    plataform: string | undefined;
+    taxAmount: number | undefined;
+  }[];
 }
 
 export interface PaymentResponse {
   success: boolean;
-  message: string;
-  transactionId: string;
 }
 
 export interface ContractResponse {
