@@ -405,7 +405,6 @@ export class AffiliatedService {
         // Informações do Afiliado
         pdf.fontSize(12).font('Helvetica-Bold').text('INFORMAÇÕES DO AFILIADO');
         pdf.moveDown(0.3);
-
         pdf.text(`Código de Afiliado: ${user.affiliateCode}`, {
           indent: 20,
         });
@@ -420,18 +419,22 @@ export class AffiliatedService {
           pdf.fontSize(12).font('Helvetica-Bold').text('TRANSAÇÕES ASSOCIADAS');
           pdf.moveDown(0.3);
 
-          contract.transcationsIds.slice(0, 5).forEach((txId, index) => {
-            pdf
-              .fontSize(9)
-              .font('Helvetica')
-              .text(`${index + 1}. ${txId}`, { indent: 30 });
+          contract.transcationsIds.forEach((txId: string, index: number) => {
+            const tx = user.affiliateds
+              .flatMap((aff) => aff.transactions)
+              .find((t) => t.id === txId);
+            if (tx) {
+              pdf
+                .fontSize(10)
+                .font('Helvetica')
+                .text(
+                  `${index + 1}. ID: ${tx.id} | Amount: R$ ${tx.amount.toFixed(
+                    2,
+                  )} | Product: ${tx.productName}`,
+                  { indent: 20 },
+                );
+            };
           });
-
-          if (contract.transcationsIds.length > 5) {
-            pdf.text(`... e mais ${contract.transcationsIds.length - 5} transações`, {
-              indent: 30,
-            });
-          }
         }
 
         pdf.moveDown(1.5);
