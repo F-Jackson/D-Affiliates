@@ -127,12 +127,12 @@ export class AffiliatedService {
       throw new BadRequestException('userId é obrigatório');
     }
 
-    try {
-      const user = await this.userModel.findOne({ userId });
-      if (!user) {
-        throw new NotFoundException(`Usuário ${userId} não encontrado`);
-      }
+    const user = await this.userModel.findOne({ userId });
+    if (!user) {
+      throw new NotFoundException(`Usuário ${userId} não encontrado`);
+    }
 
+    try {
       user.transferSyncStatus = 'syncing';
       await user.save();
 
