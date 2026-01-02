@@ -8,6 +8,7 @@ import xss from 'xss';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: false });
@@ -19,7 +20,7 @@ async function bootstrap() {
     options: {
       url: grpcUrl,
       package: 'affiliates',
-      protoPath: 'src/proto/affiliates.proto',
+      protoPath: join(process.cwd(), 'proto/affiliates.proto'),
     },
   });
 
