@@ -13,6 +13,7 @@ import {
   AdminChangeTransferStatusDto,
   AdminConfirmContractDto,
   PaginatedAffiliatesResponseDto,
+  SendContractPendingDto,
   TransferStatusResponseDto,
 } from '../dtos/affiliate.dto';
 
@@ -80,6 +81,16 @@ export class AdminController {
       adminConfirmContractDto.contractId,
       adminConfirmContractDto.plataform,
       adminConfirmContractDto.taxAmount,
+    );
+  }
+
+  @Post('contract/send')
+  @HttpCode(HttpStatus.OK)
+  async sendContractPending(
+    @Body() sendContractPendingDto: SendContractPendingDto,
+  ) {
+    return this.affiliatedService.adminSendContractPendingToAffiliate(
+      sendContractPendingDto.userId,
     );
   }
 }

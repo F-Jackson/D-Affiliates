@@ -68,7 +68,7 @@ export class StatsService {
     }
   }
 
-  async sendContractPendingToAffiliate(userId: string) {
+  async adminSendContractPendingToAffiliate(userId: string) {
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId é obrigatório');
     }

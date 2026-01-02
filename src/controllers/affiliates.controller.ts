@@ -4,8 +4,6 @@ import {
   Post,
   Body,
   Param,
-  UseGuards,
-  Query,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -16,9 +14,7 @@ import {
   SyncTransfersDto,
   ConfirmContractDto,
   MakeStatsPaymentDto,
-  SendContractPendingDto,
   MakeContractDto,
-  GetAffiliatedStatsDto,
 } from '../dtos/affiliate.dto';
 
 @Controller('affiliates')
@@ -58,16 +54,6 @@ export class AffiliatesController {
   @HttpCode(HttpStatus.OK)
   async makeStatsPayment(@Body() makeStatsPaymentDto: MakeStatsPaymentDto) {
     return this.affiliatedService.makeStatsPayment(makeStatsPaymentDto.userId);
-  }
-
-  @Post('contract/send')
-  @HttpCode(HttpStatus.OK)
-  async sendContractPending(
-    @Body() sendContractPendingDto: SendContractPendingDto,
-  ) {
-    return this.affiliatedService.sendContractPendingToAffiliate(
-      sendContractPendingDto.userId,
-    );
   }
 
   @Post('contract/create')

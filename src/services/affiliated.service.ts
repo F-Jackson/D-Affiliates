@@ -39,8 +39,8 @@ export class AffiliatedService {
     return this.paymentService.makeStatsPayment(userId);
   }
 
-  async sendContractPendingToAffiliate(userId: string) {
-    return this.statsService.sendContractPendingToAffiliate(userId);
+  async adminSendContractPendingToAffiliate(userId: string) {
+    return this.statsService.adminSendContractPendingToAffiliate(userId);
   }
 
   async adminMakeContract(userId: string) {
