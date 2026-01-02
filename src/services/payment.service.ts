@@ -103,28 +103,28 @@ export class PaymentService {
     try {
       const user = await this.userModel.findOne({ userId });
       if (!user) {
-        throw new NotFoundException(`Usuário ${userId} não encontrado`);
+        throw new NotFoundException(`User ${userId} not found`);
       }
 
       if (user.transfers.length === 0) {
-        throw new NotFoundException('Nenhum contrato pendente encontrado');
+        throw new NotFoundException('No pending contracts found');
       }
 
       const contract = user.contracts.find((c) => c.contractId === contractId);
       if (!contract) {
         throw new NotFoundException(
-          `Contrato ${contractId} não encontrado para o usuário ${userId}`,
+          `Contract ${contractId} not found for user ${userId}`,
         );
       }
 
       if (contract.status !== 'pending') {
         throw new BadRequestException(
-          `Contrato ${contractId} não está pendente`,
+          `Contract ${contractId} is not pending`,
         );
       }
 
       if (contract.secretCode !== code) {
-        throw new UnauthorizedException('Código de confirmação inválido');
+        throw new UnauthorizedException('Invalid confirmation code');
       }
 
       contract.status = 'confirmed';
@@ -141,11 +141,11 @@ export class PaymentService {
       user.transfers.push(newTransfer);
 
       const savedUser = await user.save();
-      this.logger.log(`Contrato confirmado para ${userId}`);
+      this.logger.log(`Contract confirmed for ${userId}`);
       return savedUser;
     } catch (error) {
       this.logger.error(
-        `Erro ao confirmar contrato para ${userId}:`,
+        `Error confirming contract for ${userId}:`,
         error.message,
       );
       throw error;
@@ -155,41 +155,41 @@ export class PaymentService {
   async adminConfirmContract(
     userId: string,
     contractId: string,
-    plataform: string,
+    platform: string,
     taxAmount: number,
   ) {
     if (!userId || userId.trim().length === 0) {
-      throw new BadRequestException('userId é obrigatório');
+      throw new BadRequestException('userId is required');
     }
 
     try {
       const user = await this.userModel.findOne({ userId });
       if (!user) {
-        throw new NotFoundException(`Usuário ${userId} não encontrado`);
+        throw new NotFoundException(`User ${userId} not found`);
       }
 
       const contract = user.contracts.find((c) => c.contractId === contractId);
       if (!contract) {
         throw new NotFoundException(
-          `Contrato ${contractId} não encontrado para o usuário ${userId}`,
+          `Contract ${contractId} not found for user ${userId}`,
         );
       }
 
       if (contract.status !== 'pending') {
         throw new BadRequestException(
-          `Contrato ${contractId} não está pendente`,
+          `Contract ${contractId} is not pending`,
         );
       }
 
-      contract.plataform = plataform;
+      contract.plataform = platform;
       contract.taxAmount = taxAmount;
 
       const savedUser = await user.save();
-      this.logger.log(`Contrato confirmado para ${userId} pelo admin`);
+      this.logger.log(`Contract confirmed for ${userId} by admin`);
       return savedUser;
     } catch (error) {
       this.logger.error(
-        `Erro ao confirmar contrato para ${userId} pelo admin:`,
+        `Error confirming contract for ${userId} by admin:`,
         error.message,
       );
       throw error;
@@ -211,7 +211,7 @@ export class PaymentService {
   ) {
     const user = await this.userModel.findOne({ userId });
     if (!user) {
-      throw new NotFoundException(`Usuário ${userId} não encontrado`);
+      throw new NotFoundException(`User ${userId} not found`);
     }
 
     const transfer = user.transfers.find(
@@ -219,7 +219,7 @@ export class PaymentService {
     );
     if (!transfer) {
       throw new NotFoundException(
-        `Transferência ${transferId} não encontrada para o usuário ${userId}`,
+        `Transfer ${transferId} not found for user ${userId}`,
       );
     }
 
@@ -236,7 +236,7 @@ export class PaymentService {
 
     await user.save();
     this.logger.log(
-      `Transferência ${transferId} atualizada para o usuário ${userId}`,
+      `Transfer ${transferId} updated for user ${userId}`,
     );
   }
 }
