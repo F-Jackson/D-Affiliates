@@ -130,6 +130,9 @@ class Transfer {
 
   @Prop({ type: String })
   details?: string;
+
+  @Prop({ type: [String] })
+  usedTransactionIds?: string[];
 }
 
 export const TransferSchema = SchemaFactory.createForClass(Transfer);

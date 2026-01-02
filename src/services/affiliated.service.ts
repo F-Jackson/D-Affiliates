@@ -208,10 +208,6 @@ export class AffiliatedService {
       .filter((t) => t.status === 'pending')
       .reduce((sum, t) => sum + t.amount, 0);
 
-    const lastTransferDate = user.transfers.length
-      ? user.transfers[user.transfers.length - 1].date
-      : null;
-
     const threeMonth = new Date(Date.now() - 60 * 60 * 1000 * 24 * 30 * 3);
 
     const affiliatesToCalculate = user.affiliateds.filter((aff) => {
@@ -219,6 +215,11 @@ export class AffiliatedService {
     });
 
     const numberOfAffiliates = affiliatesToCalculate.length;
+
+    const usedTransactionIds = user.transfers
+      .flatMap((t) => t. || [])
+      .filter((id) => id);
+    
 
     const lastMonthDate = new Date(
       now.getFullYear(),
@@ -229,7 +230,7 @@ export class AffiliatedService {
       return (
         sum +
         aff.transactions
-          .filter((t) => new Date(t.date) >= lastMonthDate)
+          .filter((t) => new Date(t.date) >= lastMonthDate && t.status === 'completed' &&!usedTransactionIds.includes(t.id))
           .reduce((s, t) => s + t.amount, 0)
       );
     }, 0);
