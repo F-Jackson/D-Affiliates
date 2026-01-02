@@ -255,24 +255,12 @@ export class AffiliatedService {
       ],
     };
 
-    const nextPaymentDate = new Date(
-      now.getFullYear(),
-      now.getMonth() + 1,
-      now.getDate(),
-    );
-    user.nextPayment = nextPaymentDate;
-
     await user.save();
-
-    this.logger.log(
-      `Estatísticas atualizadas para ${userId}. Próximo pagamento agendado em ${nextPaymentDate}`,
-    );
   }
 
   private async fetchExternalTransactions(
     affiliateIds: string[],
   ): Promise<any[]> {
-    // Simular chamada a API externa
     return [];
   }
 
@@ -295,22 +283,9 @@ export class AffiliatedService {
 
   async makeContract(
     userId: string,
-    paymentMethod: PaymentMethod,
   ): Promise<UserDocument> {
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId é obrigatório');
-    }
-
-    if (!paymentMethod || !paymentMethod.type || !paymentMethod.details) {
-      throw new BadRequestException(
-        'paymentMethod com type e details é obrigatório',
-      );
-    }
-
-    if (!['bank_transfer', 'paypal', 'crypto'].includes(paymentMethod.type)) {
-      throw new BadRequestException(
-        'Tipo de pagamento inválido: bank_transfer, paypal ou crypto',
-      );
     }
 
     try {
@@ -331,33 +306,24 @@ export class AffiliatedService {
         );
       }
 
-      // Validar e hashear dados sensíveis dependendo do tipo
-      let secureData: any = {};
+      const now = new Date();
+    if (user.nextPayment && user.nextPayment > now) {
+      this.logger.log(
+        `Pagamento de estatísticas para ${userId} já está agendado em ${user.nextPayment}`,
+      );
+      throw new Error('');
+    }
 
-      if (paymentMethod.type === 'bank_transfer') {
-        secureData.bankAccountHash = this.hashSensitiveData(
-          paymentMethod.details,
-        );
-      } else if (paymentMethod.type === 'crypto') {
-        secureData.walletAddress = paymentMethod.details; // Em produção, validar endereço
-      } else if (paymentMethod.type === 'paypal') {
-        secureData.paypalEmail = this.hashSensitiveData(paymentMethod.details);
+
+      const newContract = {
+        status: 'pending',
+        amount: user.stats?.totalEarningsLastMonth || 0,
+        createdAt: new Date(),
       }
 
-      const transfer: any = {
-        amount: 0, // Será preenchido quando o contrato for confirmado
-        date: new Date(),
-        status: 'pending',
-        paymentMethod: paymentMethod.type,
-        ...secureData,
-      };
-
-      user.transfers.push(transfer);
+      user.contracts.push(newContract);
 
       const savedUser = await user.save();
-      this.logger.log(
-        `Contrato criado para ${userId} com método: ${paymentMethod.type}`,
-      );
       return savedUser;
     } catch (error) {
       this.logger.error(
