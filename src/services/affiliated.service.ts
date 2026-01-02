@@ -135,9 +135,12 @@ export class AffiliatedService {
       user.transferSyncStatus = 'syncing';
       await user.save();
 
-      const affiliateds = user.affiliateds.map((aff) => aff.userId);
+      const threeMonthsAgo = new Date(Date.now() - 60 * 60 * 1000 * 24 * 30 * 3);
+    const affiliatesToCalculate = user.affiliateds.filter((aff) => {
+      return aff.createdAt <= threeMonthsAgo;
+    });
 
-      const transactions = await this.fetchExternalTransactions(affiliateds);
+      const transactions = await this.fetchExternalTransactions(affiliatesToCalculate.map(a => a.userId));
 
       transactions.forEach((tx) => {
         const affiliated = user.affiliateds.find(
