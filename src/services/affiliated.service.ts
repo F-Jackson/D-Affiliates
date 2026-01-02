@@ -80,4 +80,18 @@ async adminGetAffiliatedStats(userId: string) {
       newStatus,
     );
   }
+
+  async adminConfirmContract(
+    userId: string,
+    contractId: string,
+    plataform: string,
+    taxAmount: number,
+  ) {
+    return this.paymentService.adminConfirmContract(
+      userId,
+      contractId,
+      plataform,
+      taxAmount,
+    );
+  }
 }

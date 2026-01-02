@@ -180,9 +180,7 @@ export class PaymentService {
           `Contrato ${contractId} não está pendente`,
         );
       }
-
-      contract.status = 'confirmed';
-      contract.confirmedAt = new Date();
+      
       contract.plataform = plataform;
       contract.taxAmount = taxAmount;
 
