@@ -182,22 +182,67 @@ export class AffiliatedService {
     }
   }
 
-  private async makeStatsPayment(userId: string): Promise<void> {
+  async makeStatsPayment(userId: string): Promise<void> {
     const user = await this.userModel.findOne({ userId });
     if (!user) {
       throw new NotFoundException(`Usuário ${userId} não encontrado`);
     }
 
     const now = new Date();
-    if (
-      user.nextPayment &&
-      user.nextPayment > now
-    ) {
+    if (user.nextPayment && user.nextPayment > now) {
       this.logger.log(
         `Pagamento de estatísticas para ${userId} já está agendado em ${user.nextPayment}`,
       );
       return;
     }
+
+    const totalEarnings = user.affiliateds.reduce((sum, aff) => {
+      return sum + aff.transactions.reduce((s, t) => s + t.amount, 0);
+    }, 0);
+
+    const totalWithdrawn = user.transfers
+      .filter((t) => t.status === 'completed')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const pendingWithdrawals = user.transfers
+      .filter((t) => t.status === 'pending')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const numberOfAffiliates = user.affiliateds.length;
+
+    const lastMonthDate = new Date(
+      now.getFullYear(),
+      now.getMonth() - 1,
+      now.getDate(),
+    );
+    const totalEarningsLastMonth = user.affiliateds.reduce((sum, aff) => {
+      return (
+        sum +
+        aff.transactions
+          .filter((t) => new Date(t.date) >= lastMonthDate)
+          .reduce((s, t) => s + t.amount, 0)
+      );
+    }, 0);
+
+    const totalTransactionsLastMonth = user.affiliateds.reduce((sum, aff) => {
+      return (
+        sum +
+        aff.transactions.filter((t) => new Date(t.date) >= lastMonthDate).length
+      );
+    }, 0);
+
+    if (!user.stats) {
+      user.stats = {};
+    }
+
+    user.stats = {
+      totalEarnings,
+      totalWithdrawn,
+      pendingWithdrawals,
+      numberOfAffiliates,
+      totalEarningsLastMonth,
+      totalTransactionsLastMonth,
+    };
 
     const nextPaymentDate = new Date(
       now.getFullYear(),
@@ -206,21 +251,10 @@ export class AffiliatedService {
     );
     user.nextPayment = nextPaymentDate;
 
-    const paymentData = {
-      amount: user.affiliateds.reduce((sum, aff) => {
-        return (
-          sum +
-          aff.transactions
-            .filter((t) => t.status === 'completed')
-            .reduce((s, t) => s + t.amount, 0)
-        );
-      }, 0),
-    }
-
     await user.save();
 
     this.logger.log(
-      `Próximo pagamento de estatísticas para ${userId} agendado em ${nextPaymentDate}`,
+      `Estatísticas atualizadas para ${userId}. Próximo pagamento agendado em ${nextPaymentDate}`,
     );
   }
 
