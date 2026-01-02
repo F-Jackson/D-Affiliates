@@ -76,7 +76,7 @@ export class AffiliatesController {
     try {
       await this.handleIdempotency('getSub', idempotencyKey);
     } catch (e: any) {
-      return { success: true, message: 'Request already processed'};
+      return { success: true, message: 'Request already processed' };
     }
 
     try {
@@ -108,7 +108,7 @@ export class AffiliatesController {
     try {
       await this.handleIdempotency('getSub', idempotencyKey);
     } catch (e: any) {
-      return { success: true, message: 'Request already processed'};
+      return { success: true, message: 'Request already processed' };
     }
 
     try {
@@ -138,7 +138,7 @@ export class AffiliatesController {
     try {
       await this.handleIdempotency('getSub', idempotencyKey);
     } catch (e: any) {
-      return { success: true, message: 'Request already processed'};
+      return { success: true, message: 'Request already processed' };
     }
 
     try {
@@ -165,7 +165,7 @@ export class AffiliatesController {
     try {
       await this.handleIdempotency('getSub', idempotencyKey);
     } catch (e: any) {
-      return { success: true, message: 'Request already processed'};
+      return { success: true, message: 'Request already processed' };
     }
 
     try {
@@ -195,7 +195,7 @@ export class AffiliatesController {
     try {
       await this.handleIdempotency('getSub', idempotencyKey);
     } catch (e: any) {
-      return { success: true, message: 'Request already processed'};
+      return { success: true, message: 'Request already processed' };
     }
 
     try {
@@ -222,7 +222,7 @@ export class AffiliatesController {
     try {
       await this.handleIdempotency('getSub', idempotencyKey);
     } catch (e: any) {
-      return { success: true, message: 'Request already processed'};
+      return { success: true, message: 'Request already processed' };
     }
 
     try {

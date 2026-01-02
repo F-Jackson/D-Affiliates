@@ -10,6 +10,7 @@ import { AdminController } from '../controllers/admin.controller';
 import { AffiliatesController } from 'src/controllers/grpc.controller';
 import { DbModule } from './db.module';
 import { RedisModule } from './redis.module';
+import IdempotencyCheckService from 'src/security/idempotency-check.service';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { RedisModule } from './redis.module';
     PaymentService,
     AffiliateService,
     StatsService,
+    IdempotencyCheckService,
   ],
   exports: [
     AffiliatedService,
@@ -30,6 +32,7 @@ import { RedisModule } from './redis.module';
     PaymentService,
     AffiliateService,
     StatsService,
+    IdempotencyCheckService,
   ],
   controllers: [AdminController, AffiliatesController],
 })
