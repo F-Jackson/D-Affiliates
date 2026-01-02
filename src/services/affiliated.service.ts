@@ -1,19 +1,11 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { User, UserDocument } from '../schemas/user.schema';
-import { ContractService } from './contract.service';
+import { Injectable  } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { AffiliateService } from './affiliate.service';
 import { StatsService } from './stats.service';
 
 @Injectable()
 export class AffiliatedService {
-  private readonly logger = new Logger(AffiliatedService.name);
-
   constructor(
-    @InjectModel(User.name) private userModel: Model<UserDocument>,
-    private contractService: ContractService,
     private paymentService: PaymentService,
     private affiliateService: AffiliateService,
     private statsService: StatsService,
