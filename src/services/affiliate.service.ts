@@ -9,45 +9,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as crypto from 'crypto';
 import { User, UserDocument } from '../schemas/app.schema';
-
-const ALLOWED_AFFILIATE_COUNTRY = [
-  // Tier 1 — Criadores profissionais / alta maturidade em afiliados
-  'US', // Estados Unidos (marketing de performance avançado)
-  'UK', // Reino Unido
-  'CA', // Canadá
-  'AU', // Austrália
-
-  // Tier 2 — Alto volume de creators + custo mais baixo
-  'BR', // Brasil (YouTube, Instagram, TikTok muito fortes)
-  'MX', // México
-  'AR', // Argentina
-  'CO', // Colômbia
-
-  // Europa — SEO, review sites, afiliados técnicos
-  'PT', // Portugal
-  'ES', // Espanha
-  'PL', // Polônia
-  'RO', // Romênia
-
-  // Ásia — creators massivos, mobile-first
-  'IN', // Índia
-  'PH', // Filipinas
-  'ID', // Indonésia
-  'VN', // Vietnã
-
-  // África — crescimento orgânico e tráfego social
-  'NG', // Nigéria
-  'KE', // Quênia
-
-  // Oriente Médio — creators + tráfego pago
-  'AE', // Emirados Árabes Unidos
-];
-
-type DocumentRule = {
-  name: string;
-  regex: RegExp;
-  normalize: (value: string) => string;
-};
+import { DOCUMENT_RULES_BY_COUNTRY } from './document-rules';
 
 @Injectable()
 export class AffiliateService {
@@ -70,9 +32,10 @@ export class AffiliateService {
         throw new ConflictException('Usuário já está registrado');
       }
 
-      if (!ALLOWED_AFFILIATE_COUNTRY.includes(country)) {
+      const docRule = DOCUMENT_RULES_BY_COUNTRY[country];
+      if (!docRule) {
         throw new BadRequestException(
-          `Afiliados do país ${country} não são aceitos`,
+          `País ${country} não é permitido ou não possui regras de validação`,
         );
       }
 
@@ -80,17 +43,17 @@ export class AffiliateService {
         throw new BadRequestException('documentId é obrigatório');
       }
 
-      const docRule = DOCUMENT_RULES_BY_COUNTRY[country];
-      if (!docRule) {
+      const normalizedDocId = docRule.normalize(documentId);
+
+      if (!docRule.regex.test(normalizedDocId)) {
         throw new BadRequestException(
-          `Regras de documento não definidas para o país ${country}`,
+          `Formato de documento inválido para ${country} (esperado: ${docRule.name})`,
         );
       }
 
-      const normalizedDocId = docRule.normalize(documentId);
-      if (!docRule.regex.test(normalizedDocId)) {
+      if (!docRule.validate(normalizedDocId)) {
         throw new BadRequestException(
-          `documentId inválido para o país ${country} (${docRule.name})`,
+          `Documento inválido para ${country} - falha na validação de checksum`,
         );
       }
 
@@ -98,6 +61,7 @@ export class AffiliateService {
 
       const newUser = new this.userModel({
         userId,
+        country,
         affiliateCode,
         status: 'active',
         affiliateds: [],
@@ -105,7 +69,7 @@ export class AffiliateService {
       });
 
       const savedUser = await newUser.save();
-      this.logger.log(`Novo usuário registrado: ${userId}`);
+      this.logger.log(`Novo usuário registrado: ${userId} (${country})`);
       return savedUser;
     } catch (error) {
       this.logger.error(`Erro ao registrar usuário ${userId}:`, error.message);
