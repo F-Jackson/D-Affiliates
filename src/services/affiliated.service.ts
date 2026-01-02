@@ -245,9 +245,11 @@ export class AffiliatedService {
       totalWithdrawn,
       pendingWithdrawals,
       numberOfAffiliates,
-      totalEarningsPeriod,
-      totalTransactionsPeriod,
-      availableTransactionIds: notUsedTransactions.map((t) => t.id),
+      totalEarningsLastMonth: totalEarningsPeriod,
+      totalTransactionsLastMonth: totalTransactionsPeriod,
+      usedTransactionIds: [
+        ...notUsedTransactions.map((t) => t.id),
+      ],
     };
 
     const nextPaymentDate = new Date(
