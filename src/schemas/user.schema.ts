@@ -54,27 +54,6 @@ export const UserSchema = SchemaFactory.createForClass(User);
 
 UserSchema.set('versionKey', 'version');
 UserSchema.set('toJSON', { virtuals: true });
-
-UserSchema.virtual('stats').get(function (this: UserDocument) {
-  const totalEarnings = this.affiliateds.reduce(
-    (sum, aff) => sum + aff.transactions.reduce((s, t) => s + t.amount, 0),
-    0,
-  );
-  const totalWithdrawn = this.transfers
-    .filter((t) => t.status === 'completed')
-    .reduce((sum, t) => sum + t.amount, 0);
-  const pendingWithdrawals = this.transfers
-    .filter((t) => t.status === 'pending')
-    .reduce((sum, t) => sum + t.amount, 0);
-  const numberOfAffiliates = this.affiliateds.length;
-  return {
-    totalEarnings,
-    totalWithdrawn,
-    pendingWithdrawals,
-    numberOfAffiliates,
-  };
-});
-
 UserSchema.index({ affiliateCode: 1 });
 UserSchema.index({ status: 1 });
 UserSchema.index({ 'affiliateds.userId': 1 });
