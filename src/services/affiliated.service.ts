@@ -1,4 +1,4 @@
-import { Injectable  } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { AffiliateService } from './affiliate.service';
 import { StatsService } from './stats.service';
@@ -50,6 +50,26 @@ export class AffiliatedService {
       code,
       paymentMethod,
       contractId,
+    );
+  }
+
+  async adminChangeTransfer(
+    userId: string,
+    transferId: string,
+    newStatus: {
+      failedReason: string;
+      success?: {
+        paymentProofUrl: string;
+        internalPaymentProofUrl?: string;
+        completedDate: Date;
+      };
+      detail?: string;
+    },
+  ) {
+    return this.paymentService.adminChangeTransfer(
+      userId,
+      transferId,
+      newStatus,
     );
   }
 }
