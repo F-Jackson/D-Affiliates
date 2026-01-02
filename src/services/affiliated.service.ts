@@ -208,14 +208,24 @@ export class AffiliatedService {
       .filter((t) => t.status === 'pending')
       .reduce((sum, t) => sum + t.amount, 0);
 
-    const numberOfAffiliates = user.affiliateds.length;
+    const lastTransferDate = user.transfers.length
+      ? user.transfers[user.transfers.length - 1].date
+      : null;
+
+    const threeMonth = new Date(Date.now() - 60 * 60 * 1000 * 24 * 30 * 3);
+
+    const affiliatesToCalculate = user.affiliateds.filter((aff) => {
+      return aff.createdAt <= threeMonth;
+    });
+
+    const numberOfAffiliates = affiliatesToCalculate.length;
 
     const lastMonthDate = new Date(
       now.getFullYear(),
       now.getMonth() - 1,
       now.getDate(),
     );
-    const totalEarningsLastMonth = user.affiliateds.reduce((sum, aff) => {
+    const totalEarningsLastMonth = affiliatesToCalculate.reduce((sum, aff) => {
       return (
         sum +
         aff.transactions
@@ -274,22 +284,6 @@ export class AffiliatedService {
     if (!user) {
       throw new NotFoundException(`Usuário ${userId} não encontrado`);
     }
-
-    const lastTransferDate = user.transfers.length
-      ? user.transfers[user.transfers.length - 1].date
-      : null;
-
-    const threeMonth = new Date(Date.now() - 60 * 60 * 1000 * 24 * 30 * 3);
-
-    const affiliatesToNotify = user.affiliateds.filter((aff) => {
-      return (
-        (!lastTransferDate ||
-          aff.transactions.some(
-            (tx) => new Date(tx.date) > lastTransferDate,
-          )) &&
-        aff.createdAt <= threeMonth
-      );
-    });
 
     for (const aff of affiliatesToNotify) {
       this.logger.log(
