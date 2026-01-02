@@ -151,7 +151,28 @@ export class PaymentService {
       completedDate: Date;
     },
     detail?: string
-  }): Promise<UserDocument> {
+  }) {
+    const user = await this.userModel.findOne({ userId });
+    if (!user) {
+      throw new NotFoundException(`Usuário ${userId} não encontrado`);
+    }
 
+    const transfer = user.transfers.find(t => t._id && t._id.toString() === transferId);
+    if (!transfer) {
+      throw new NotFoundException(`Transferência ${transferId} não encontrada para o usuário ${userId}`);
+    }
+
+    if (newStatus.success) {
+      transfer.status = 'completed';
+      transfer.paymentProofUrl = newStatus.success.paymentProofUrl;
+      transfer.internalPaymentProofUrl = newStatus.success.internalPaymentProofUrl;
+      transfer.completedDate = newStatus.success.completedDate;
+    } else {
+      transfer.status = 'failed';
+      transfer.failureReason = newStatus.failedReason;
+    }
+
+    await user.save();
+    this.logger.log(`Transferência ${transferId} atualizada para o usuário ${userId}`);
   }
 }
