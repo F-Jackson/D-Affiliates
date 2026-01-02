@@ -155,12 +155,7 @@ export class AffiliateService {
           `documentId inválido para o país ${country} (${docRule.name})`,
         );
       }
-
-      const documentHash = crypto
-        .createHash('sha256')
-        .update(normalizedDocId)
-        .digest('hex');
-
+      
       const affiliateCode = this.generateAffiliateCode();
 
       const newUser = new this.userModel({
