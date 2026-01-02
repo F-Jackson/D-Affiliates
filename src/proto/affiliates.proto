@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package affiliates;
 
+import "google/protobuf/timestamp.proto";
+
 service AffiliatesService {
   rpc RegisterUser (RegisterUserRequest) returns (UserRegistrationResponse);
   rpc SyncAffiliate (SyncAffiliateRequest) returns (SyncAffiliateResponse);
@@ -12,7 +14,12 @@ service AffiliatesService {
   rpc ConfirmContract (ConfirmContractRequest) returns (ConfirmContractResponse);
 }
 
+//
+// =====================
 // Requests
+// =====================
+//
+
 message RegisterUserRequest {
   string user_id = 1;
   string country = 2;
@@ -46,13 +53,47 @@ message ConfirmContractRequest {
   string payment_method = 4;
 }
 
+//
+// =====================
+// Shared Models
+// =====================
+//
+
+message Stats {
+  double total_earnings = 1;
+  double total_withdrawn = 2;
+  double pending_withdrawals = 3;
+  int32 number_of_affiliates = 4;
+  double total_earnings_last_month = 5;
+}
+
+message Transfer {
+  double amount = 1;
+  TransferStatus status = 2;
+  string failure_reason = 3;
+  string details = 4;
+  google.protobuf.Timestamp completed_date = 5;
+}
+
+message Contract {
+  string contract_id = 1;
+  string status = 2;
+  double amount = 3;
+  google.protobuf.Timestamp confirmed_at = 4;
+  string platform = 5;
+  double tax_amount = 6;
+}
+
+//
+// =====================
 // Responses
+// =====================
+//
+
 message UserRegistrationResponse {
-  string id = 1;
-  string user_id = 2;
+  bool success = 1;
+  string message = 2;
   string affiliate_code = 3;
-  string status = 4;
-  string created_at = 5;
 }
 
 message SyncAffiliateResponse {
@@ -66,23 +107,25 @@ message SyncTransfersResponse {
 }
 
 message AffiliatedStatsResponse {
-  string user_id = 1;
-  double total_earnings = 2;
-  double total_withdrawn = 3;
-  double pending_withdrawals = 4;
-  int32 number_of_affiliates = 5;
+  bool success = 1;
+  string message = 2;
+  string affiliate_code = 3;
+  string status = 4;
+  string stats = 5;
+  repeated Transfer transfers = 6;
+  google.protobuf.Timestamp next_payment = 7;
+  repeated Contract contracts = 8;
 }
 
 message PaymentResponse {
   bool success = 1;
   string message = 2;
-  string transaction_id = 3;
 }
 
 message ContractResponse {
   string contract_id = 1;
-  string status = 2;
-  string message = 3;
+  string message = 2;
+  string status = 3;
 }
 
 message ConfirmContractResponse {
