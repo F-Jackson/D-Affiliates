@@ -11,6 +11,7 @@ import {
 import { AffiliatedService } from '../services/affiliated.service';
 import {
   AdminChangeTransferStatusDto,
+  AdminConfirmContractDto,
   PaginatedAffiliatesResponseDto,
   TransferStatusResponseDto,
 } from '../dtos/affiliate.dto';
@@ -72,8 +73,13 @@ export class AdminController {
   @Post('contract/confirm')
   @HttpCode(HttpStatus.OK)
   async confirmContract(
-    @Body('userId') userId: string,
+    @Body() adminConfirmContractDto: AdminConfirmContractDto,
   ) {
-    return this.affiliatedService.adminConfirmContract()
-  } 
+    return this.affiliatedService.adminConfirmContract(
+      adminConfirmContractDto.userId,
+      adminConfirmContractDto.contractId,
+      adminConfirmContractDto.plataform,
+      adminConfirmContractDto.taxAmount,
+    );
+  }
 }

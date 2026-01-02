@@ -111,6 +111,20 @@ export class AdminGetAffiliatesListDto {
   page: number = 1;
 }
 
+export class AdminConfirmContractDto {
+  @IsString()
+  userId: string;
+
+  @IsString()
+  contractId: string;
+
+  @IsString()
+  plataform: string;
+
+  @IsNumber()
+  taxAmount: number;
+}
+
 // ========== RESPONSE DTOS ==========
 
 export class AffiliateSummaryDto {
