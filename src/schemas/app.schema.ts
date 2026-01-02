@@ -65,6 +65,9 @@ class Contracts {
   amount: number;
 
   @Prop({ type: String })
+  secretCode: string;
+
+  @Prop({ type: String })
   contractPDFUrl?: string;
 
   @Prop({ type: String })

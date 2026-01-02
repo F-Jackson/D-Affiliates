@@ -323,6 +323,7 @@ export class AffiliatedService {
         status: 'pending',
         amount: user.stats?.totalEarningsLastMonth || 0,
         createdAt: new Date(),
+        secretCode: crypto.randomBytes(4).toString('hex').toUpperCase(),
       }
 
       user.contracts.push(newContract);
