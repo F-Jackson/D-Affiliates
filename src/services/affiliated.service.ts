@@ -20,7 +20,7 @@ export class AffiliatedService {
   }
 
 async adminGetAffiliatedStats(userId: string) {
-    return this.statsService.getAffiliatedStats(userId);
+    return this.statsService.adminGetAffiliatedStats(userId);
   }
 
   async adminGetAffiliatesList(page: number) {

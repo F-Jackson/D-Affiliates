@@ -16,6 +16,27 @@ export class StatsService {
 
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
+  async adminGetAffiliatedStats(userId: string) {
+    if (!userId || userId.trim().length === 0) {
+      throw new BadRequestException('userId é obrigatório');
+    }
+
+    try {
+      const user = await this.userModel.findOne({ userId });
+      if (!user) {
+        throw new NotFoundException(`Usuário ${userId} não encontrado`);
+      }
+
+      return user;
+    } catch (error) {
+      this.logger.error(
+        `Erro ao obter estatísticas administrativas de ${userId}:`,
+        error.message,
+      );
+      throw error;
+    }
+  }
+
   async getAffiliatedStats(userId: string) {
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId é obrigatório');
