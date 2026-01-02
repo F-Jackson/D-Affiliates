@@ -72,7 +72,7 @@ export class AffiliatedService {
         stats,
         numberOfAffiliates: user.affiliateds.length,
         totalTransfers: user.transfers.length,
-        lastActivityDate: user.lastActivityDate,
+        nextPayment: user.nextPayment,
       };
     } catch (error) {
       this.logger.error(
@@ -107,7 +107,7 @@ export class AffiliatedService {
         throw new NotFoundException(`Usuário ${userId} não encontrado`);
       }
 
-      user.lastActivityDate = new Date();
+      user.nextPayment = new Date();
       user.affiliateds.push({ userId, transactions: [] });
       await user.save();
 
@@ -164,7 +164,6 @@ export class AffiliatedService {
         }
       });
 
-      user.lastActivityDate = new Date();
       user.transferSyncStatus = 'completed';
       const savedUser = await user.save();
 
@@ -181,6 +180,55 @@ export class AffiliatedService {
 
       throw error;
     }
+  }
+
+  private async makeStatsPayment(userId: string): Promise<void> {
+    const user = await this.userModel.findOne({ userId });
+    if (!user) {
+      throw new NotFoundException(`Usuário ${userId} não encontrado`);
+    }
+
+    const now = new Date();
+    if (
+      user.nextPayment &&
+      user.nextPayment > now
+    ) {
+      this.logger.log(
+        `Pagamento de estatísticas para ${userId} já está agendado em ${user.nextPayment}`,
+      );
+      return;
+    }
+
+    const nextPaymentDate = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      now.getDate(),
+    );
+    user.nextPayment = nextPaymentDate;
+
+    const paymentData = {
+      amount: user.affiliateds.reduce((sum, aff) => {
+        return (
+          sum +
+          aff.transactions
+            .filter((t) => t.status === 'completed')
+            .reduce((s, t) => s + t.amount, 0)
+        );
+      }, 0),
+    }
+
+    await user.save();
+
+    this.logger.log(
+      `Próximo pagamento de estatísticas para ${userId} agendado em ${nextPaymentDate}`,
+    );
+  }
+
+  private async fetchExternalTransactions(
+    affiliateIds: string[],
+  ): Promise<any[]> {
+    // Simular chamada a API externa
+    return [];
   }
 
   async sendContractToAffiliates(userId: string): Promise<void> {
@@ -276,7 +324,6 @@ export class AffiliatedService {
       };
 
       user.transfers.push(transfer);
-      user.lastActivityDate = new Date();
 
       const savedUser = await user.save();
       this.logger.log(
@@ -330,7 +377,6 @@ export class AffiliatedService {
 
       pendingTransfer.status = 'completed';
       pendingTransfer.completedDate = new Date();
-      user.lastActivityDate = new Date();
 
       const savedUser = await user.save();
       this.logger.log(`Contrato confirmado para ${userId}`);

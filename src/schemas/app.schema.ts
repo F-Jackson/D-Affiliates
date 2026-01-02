@@ -193,7 +193,7 @@ export class User {
   transferSyncStatus: 'syncing' | 'completed' | 'failed' | 'pending';
 
   @Prop({ type: Date })
-  lastActivityDate?: Date;
+  nextPayment?: Date;
 
   @Prop({ type: StatsSchema })
   stats?: Stats;
