@@ -70,9 +70,6 @@ class Contracts {
   @Prop({ type: String })
   secretCode: string;
 
-  @Prop({ type: String })
-  paymentMethod?: string;
-
   @Prop({ type: [String] })
   transcationsIds?: string[];
 }
@@ -106,10 +103,13 @@ class Transfer {
   status: 'pending' | 'completed' | 'failed';
 
   @Prop({ enum: ['bank_transfer', 'paypal', 'crypto'] })
-  paymentMethod?: 'bank_transfer' | 'paypal' | 'crypto';
+  paymentMethod: 'bank_transfer' | 'paypal' | 'crypto';
 
   @Prop({ type: String })
   paymentProofUrl?: string;
+  
+  @Prop({ type: String })
+  internalPaymentProofUrl?: string;
 
   @Prop({ type: String })
   failureReason?: string;

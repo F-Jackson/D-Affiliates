@@ -86,7 +86,7 @@ export class PaymentService {
     await user.save();
   }
 
-  async confirmContract(userId: string, code: string, contractId: string): Promise<UserDocument> {
+  async confirmContract(userId: string, code: string, paymentMethod: 'bank_transfer' | 'paypal' | 'crypto', contractId: string): Promise<UserDocument> {
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId é obrigatório');
     }
@@ -126,6 +126,7 @@ export class PaymentService {
         status: 'pending' as const,
         usedTransactionIds: contract.transcationsIds,
         createdAt: new Date(),
+        paymentMethod,
       };
 
       user.transfers.push(newTransfer);
@@ -140,5 +141,17 @@ export class PaymentService {
       );
       throw error;
     }
+  }
+
+  async adminChangeTransfer(userId: string, transferId: string, newStatus: {
+    failedReason: string;
+    success?: {
+      paymentProofUrl: string;
+      internalPaymentProofUrl?: string;
+      completedDate: Date;
+    },
+    detail?: string
+  }): Promise<UserDocument> {
+
   }
 }
