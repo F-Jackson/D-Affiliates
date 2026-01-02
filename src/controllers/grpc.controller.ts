@@ -68,29 +68,7 @@ export class GrpcController {
     const stats = await this.affiliatedService.getAffiliatedStats(
       request.userId,
     );
-    return {
-      affiliateCode: stats.affiliateCode,
-      status: stats.status,
-      stats: {
-        totalEarnings: stats.totalEarnings,
-        totalWithdrawn: stats.totalWithdrawn,
-        pendingWithdrawals: stats.pendingWithdrawals,
-        numberOfAffiliates: stats.numberOfAffiliates,
-        totalEarningsLastMonth: stats.totalEarningsLastMonth,
-        totalEarningsLastYear: stats.totalEarningsLastYear,
-      },
-      numberOfAffiliates: stats.numberOfAffiliates,
-      totalTransfers: stats.totalTransfers,
-      nextPayment: stats.nextPayment,
-      constracts: stats.constracts.map((c) => ({
-        contractId: c._id.toString(),
-        status: c.status,
-        amount: c.amount,
-        confirmedAt: c.confirmedAt,
-        plataform: c.plataform,
-        taxAmount: c.taxAmount,
-      })),
-    };
+    return stats;
   }
 
   @GrpcMethod('AffiliatesService', 'MakeStatsPayment')

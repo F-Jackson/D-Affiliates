@@ -53,11 +53,30 @@ export class StatsService {
       return {
         affiliateCode: user.affiliateCode,
         status: user.status,
-        stats,
+        stats: stats ? {
+          totalEarnings: stats.totalEarnings,
+          totalWithdrawn: stats.totalWithdrawn,
+          pendingWithdrawals: stats.pendingWithdrawals,
+          numberOfAffiliates: stats.numberOfAffiliates,
+          totalEarningsLastMonth: stats.totalEarningsLastMonth,
+        } : undefined,
         numberOfAffiliates: user.affiliateds.length,
-        totalTransfers: user.transfers.length,
+        transfers: user.transfers.map((t) => ({
+          amount: t.amount,
+          status: t.status,
+          failureReason: t.failureReason,
+          details: t.details,
+          completedDate: t.completedDate,
+        })),
         nextPayment: user.nextPayment,
-        constracts: user.contracts,
+        constracts: user.contracts.map((c) => ({
+          contractId: c.contractId,
+          status: c.status,
+          amount: c.amount,
+          confirmedAt: c.confirmedAt,
+          plataform: c.plataform,
+          taxAmount: c.taxAmount,
+        })),
       };
     } catch (error) {
       this.logger.error(
