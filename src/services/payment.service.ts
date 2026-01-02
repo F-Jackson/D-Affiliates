@@ -89,7 +89,7 @@ export class PaymentService {
   async confirmContract(
     userId: string,
     code: string,
-    paymentMethod: 'bank_transfer' | 'paypal' | 'crypto',
+    paymentStr: string,
     contractId: string,
   ) {
     if (!userId || userId.trim().length === 0) {
@@ -135,7 +135,7 @@ export class PaymentService {
         status: 'pending' as const,
         usedTransactionIds: contract.transcationsIds,
         createdAt: new Date(),
-        paymentMethod,
+        paymentStr,
       };
 
       user.transfers.push(newTransfer);
@@ -180,7 +180,7 @@ export class PaymentService {
           `Contrato ${contractId} não está pendente`,
         );
       }
-      
+
       contract.plataform = plataform;
       contract.taxAmount = taxAmount;
 

@@ -5,12 +5,12 @@ import { UserDocument } from '../schemas/user.schema';
 import { readFileSync } from 'fs';
 import { SignPdf } from 'node-signpdf';
 import { P12Signer } from '@signpdf/signer-p12';
-import { ContractDocument } from 'src/schemas/contract.schema';
+import { ContractsDocument } from 'src/schemas/contracts.schema';
 
 @Injectable()
 export class ContractService {
   async generateContractPdf(
-    contract: ContractDocument,
+    contract: ContractsDocument,
     user: UserDocument,
     version: number,
   ): Promise<{ buffer: Buffer; pdfHash: string; hmac: string }> {
@@ -96,7 +96,7 @@ export class ContractService {
 
   private buildHeader(
     pdf: PDFKit.PDFDocument,
-    contract: ContractDocument,
+    contract: ContractsDocument,
     version: number,
   ): void {
     pdf
@@ -150,7 +150,7 @@ export class ContractService {
 
   private buildOverviewInfo(
     pdf: PDFKit.PDFDocument,
-    contract: ContractDocument,
+    contract: ContractsDocument,
     version: number,
   ): void {
     pdf.fontSize(11).font('Helvetica-Bold').text('OVERVIEW INFORMATION');
@@ -197,7 +197,7 @@ export class ContractService {
 
   private buildTransactions(
     pdf: PDFKit.PDFDocument,
-    contract: ContractDocument,
+    contract: ContractsDocument,
     user: UserDocument,
   ): void {
     if (!contract.transcationsIds?.length) return;
@@ -247,7 +247,7 @@ Any modification invalidates the digital signature and integrity hashes.`,
 
   private buildInvisibleWatermark(
     pdf: PDFKit.PDFDocument,
-    contract: ContractDocument,
+    contract: ContractsDocument,
     user: UserDocument,
   ): void {
     pdf.opacity(0.01);
@@ -268,7 +268,7 @@ Any modification invalidates the digital signature and integrity hashes.`,
 
   private buildIntegritySection(
     pdf: PDFKit.PDFDocument,
-    contract: ContractDocument,
+    contract: ContractsDocument,
     user: UserDocument,
   ): void {
     const payload = {

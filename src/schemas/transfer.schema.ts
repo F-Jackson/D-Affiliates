@@ -14,8 +14,8 @@ export class Transfer {
   })
   status: 'pending' | 'completed' | 'failed';
 
-  @Prop({ enum: ['bank_transfer', 'paypal', 'crypto'] })
-  paymentMethod: 'bank_transfer' | 'paypal' | 'crypto';
+  @Prop({ type: String })
+  paymentStr?: string;
 
   @Prop({ type: String })
   paymentProofUrl?: string;

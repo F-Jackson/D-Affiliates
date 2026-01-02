@@ -19,7 +19,7 @@ export class AffiliatedService {
     return this.statsService.getAffiliatedStats(userId);
   }
 
-async adminGetAffiliatedStats(userId: string) {
+  async adminGetAffiliatedStats(userId: string) {
     return this.statsService.adminGetAffiliatedStats(userId);
   }
 
@@ -51,12 +51,12 @@ async adminGetAffiliatedStats(userId: string) {
     userId: string,
     contractId: string,
     code: string,
-    paymentMethod: 'bank_transfer' | 'paypal' | 'crypto',
+    paymentStr: string,
   ) {
     return this.paymentService.confirmContract(
       userId,
       code,
-      paymentMethod,
+      paymentStr,
       contractId,
     );
   }
