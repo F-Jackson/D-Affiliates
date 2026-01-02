@@ -65,7 +65,7 @@ export class AffiliateService {
         status: 'active',
         affiliateds: [],
         transfers: [],
-        nextPayment: new Date() + 1 month,
+        nextPayment: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       });
 
       const savedUser = await newUser.save();
