@@ -360,6 +360,16 @@ export class AffiliatedService {
           reject(err);
         });
 
+        // Adicionar logo no cabeçalho
+        const logoPath = process.env.LOGO_PATH || './assets/logo.png';
+        try {
+          pdf.image(logoPath, 50, 20, { width: 100 });
+        } catch (logoError) {
+          this.logger.warn(`Logo não encontrada em ${logoPath}`);
+        }
+
+        pdf.moveDown(4);
+
         // Cabeçalho
         pdf.fontSize(20).font('Helvetica-Bold').text('CONTRATO DE AFILIAÇÃO', {
           align: 'center',
