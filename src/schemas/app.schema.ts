@@ -31,7 +31,7 @@ class Transaction {
     enum: ['pending', 'approved', 'rejected', 'under_review', 'reversed'],
     default: 'pending',
   })
-  status: string;
+  status: 'pending' | 'approved' | 'rejected' | 'under_review' | 'reversed';
 
   @Prop({ type: String })
   transactionId?: string;
@@ -59,7 +59,7 @@ class Contracts {
     ],
     default: 'pending',
   })
-  status: string;
+  status: 'waiting-payment' | 'paid' | 'parcial-paid' | 'pending' | 'terminated' | 'suspended';
 
   @Prop({ required: true, type: Number, min: 0.01 })
   amount: number;
@@ -110,7 +110,7 @@ class Transfer {
   @Prop({ required: true, type: Date })
   date: Date;
 
-  @Prop({ required: true, enum: ['pending', 'completed', 'failed'] })
+  @Prop({ required: true, enum: ['pending', 'completed', 'failed'], default: 'pending' })
   status: 'pending' | 'completed' | 'failed';
 
   @Prop({ type: String })

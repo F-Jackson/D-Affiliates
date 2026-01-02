@@ -196,10 +196,12 @@ export class AffiliatedService {
       return;
     }
 
+    // Total de ganhos de todos os afiliados
     const totalEarnings = user.affiliateds.reduce((sum, aff) => {
       return sum + aff.transactions.reduce((s, t) => s + t.amount, 0);
     }, 0);
 
+    // Total sacado e pendente
     const totalWithdrawn = user.transfers
       .filter((t) => t.status === 'completed')
       .reduce((sum, t) => sum + t.amount, 0);
@@ -208,37 +210,31 @@ export class AffiliatedService {
       .filter((t) => t.status === 'pending')
       .reduce((sum, t) => sum + t.amount, 0);
 
-    const threeMonth = new Date(Date.now() - 60 * 60 * 1000 * 24 * 30 * 3);
-
+    // Afiliados ativos (criados 3+ meses atrás)
+    const threeMonthsAgo = new Date(Date.now() - 60 * 60 * 1000 * 24 * 30 * 3);
     const affiliatesToCalculate = user.affiliateds.filter((aff) => {
-      return aff.createdAt <= threeMonth;
+      return aff.createdAt <= threeMonthsAgo;
     });
 
     const numberOfAffiliates = affiliatesToCalculate.length;
 
+    // IDs de transações já utilizadas em saques anteriores
     const usedTransactionIds = user.transfers
       .flatMap((t) => t.usedTransactionIds || [])
       .filter((id) => id);
 
-      const notUsedTransactions = affiliatesToCalculate
-        .flatMap((aff) => aff.transactions)
-        .filter((t) => !usedTransactionIds.includes(t.id));
+    // Transações não utilizadas (disponíveis para saque)
+    const notUsedTransactions = affiliatesToCalculate
+      .flatMap((aff) => aff.transactions)
+      .filter((t) => !usedTransactionIds.includes(t.id));
 
-    const totalEarningsLastMonth = affiliatesToCalculate.reduce((sum, aff) => {
-      return (
-        sum +
-        aff.transactions
-          .filter((t) => t.status === 'completed' &&!usedTransactionIds.includes(t.id))
-          .reduce((s, t) => s + t.amount, 0)
-      );
-    }, 0);
+    // Ganhos do período (transações não utilizadas e completadas)
+    const totalEarningsPeriod = notUsedTransactions
+      .filter((t) => t.status === 'approved')
+      .reduce((sum, t) => sum + t.amount, 0);
 
-    const totalTransactionsLastMonth = affiliatesToCalculate.reduce((sum, aff) => {
-      return (
-        sum +
-        aff.transactions.filter((t) => !usedTransactionIds.includes(t.id)).length
-      );
-    }, 0);
+    // Total de transações não utilizadas
+    const totalTransactionsPeriod = notUsedTransactions.length;
 
     if (!user.stats) {
       user.stats = {};
@@ -249,9 +245,9 @@ export class AffiliatedService {
       totalWithdrawn,
       pendingWithdrawals,
       numberOfAffiliates,
-      totalEarningsLastMonth,
-      totalTransactionsLastMonth,
-      usedTransactionIds: [],
+      totalEarningsPeriod,
+      totalTransactionsPeriod,
+      availableTransactionIds: notUsedTransactions.map((t) => t.id),
     };
 
     const nextPaymentDate = new Date(
