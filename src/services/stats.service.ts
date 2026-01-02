@@ -104,7 +104,7 @@ export class StatsService {
       }
 
       let cdId = crypto.randomBytes(16).toString('hex').toUpperCase();
-      const tries = 32;
+      const tries = 500000;
 
       while (true) {
         const existingContract = user.contracts.find((c) => c.contractId === cdId);
