@@ -11,8 +11,6 @@ import {
 import { AffiliatedService } from '../services/affiliated.service';
 import {
   AdminChangeTransferStatusDto,
-  AdminGetAffiliatedStatsDto,
-  AdminGetAffiliatesListDto,
   PaginatedAffiliatesResponseDto,
   TransferStatusResponseDto,
 } from '../dtos/affiliate.dto';
@@ -64,4 +62,18 @@ export class AdminController {
       status: adminChangeTransferStatusDto.success ? 'completed' : 'failed',
     };
   }
+
+  @Post('contract/make')
+  @HttpCode(HttpStatus.OK)
+  async makeContract(@Body('userId') userId: string) {
+    return this.affiliatedService.adminMakeContract(userId);
+  }
+
+  @Post('contract/confirm')
+  @HttpCode(HttpStatus.OK)
+  async confirmContract(
+    @Body('userId') userId: string,
+  ) {
+    return this.affiliatedService.adminConfirmContract()
+  } 
 }

@@ -5,7 +5,9 @@ import {
   IsOptional,
   IsArray,
   IsDate,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 // ========== PUBLIC ENDPOINTS DTOS ==========
 
@@ -90,6 +92,8 @@ export class AdminChangeTransferStatusDto {
   failedReason?: string;
 
   @IsOptional()
+  @ValidateNested()
+  @Type(() => AdminChangeTransferStatusSuccessDto)
   success?: AdminChangeTransferStatusSuccessDto;
 
   @IsOptional()
