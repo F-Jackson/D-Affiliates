@@ -129,7 +129,7 @@ export class PaymentService {
       contract.confirmedAt = new Date();
 
       const newTransfer = {
-        amount: contract.amount,
+        amount: contract.amount - contract.taxAmount!,
         status: 'pending' as const,
         usedTransactionIds: contract.transcationsIds,
         createdAt: new Date(),

@@ -162,7 +162,6 @@ export class StatsService {
         amount: earnedAmount,
         secretCode: crypto.randomBytes(4).toString('hex').toUpperCase(),
         transcationsIds: user.stats?.usedTransactionIds || [],
-        facialRecognitionCompleted: false,
       };
 
       user.contracts.push(newContract);

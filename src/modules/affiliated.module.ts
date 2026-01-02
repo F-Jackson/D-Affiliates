@@ -6,6 +6,8 @@ import { ContractService } from '../services/contract.service';
 import { PaymentService } from '../services/payment.service';
 import { AffiliateService } from '../services/affiliate.service';
 import { StatsService } from '../services/stats.service';
+import { AdminController } from 'src/controllers/admin.controller';
+import { AffiliatesController } from 'src/controllers/affiliates.controller';
 
 @Module({
   imports: [
@@ -25,5 +27,6 @@ import { StatsService } from '../services/stats.service';
     AffiliateService,
     StatsService,
   ],
+  controllers: [AdminController, AffiliatesController],
 })
 export class AffiliatedModule {}

@@ -22,7 +22,6 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.14.3",
     "@grpc/proto-loader": "^0.8.0",
-    "@nestjs/bull": "^11.0.4",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
@@ -33,10 +32,8 @@
     "@noble/hashes": "^2.0.1",
     "@signpdf/signer-p12": "^3.3.0",
     "@supabase/supabase-js": "^2.89.0",
-    "bull": "^4.16.5",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
-    "ioredis": "^5.8.2",
     "mongoose": "^9.1.1",
     "node-signpdf": "^3.0.0",
     "pdfkit": "^0.17.2",
