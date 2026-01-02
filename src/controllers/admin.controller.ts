@@ -17,13 +17,19 @@ import {
   SendContractPendingDto,
   TransferStatusResponseDto,
 } from '../dtos/affiliate.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('admin/affiliates')
 export class AdminController {
-  constructor(private readonly affiliatedService: AffiliatedService) {}
+  constructor(
+    private readonly affiliatedService: AffiliatedService,
+    private readonly configService: ConfigService,
+  ) {}
 
   validateApiKey(apiKey: string): void {
-    const expectedApiKey = process.env.ADMIN_AFFILIATES_API_KEY;
+    const expectedApiKey = this.configService.get<string>(
+      'ADMIN_AFFILIATES_API_KEY',
+    );
 
     if (!apiKey) {
       throw new Error('API-Key is required');
