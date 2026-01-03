@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package services_affiliates;
+
+message GetUserTransfersRequest {
+  string user_id = 1;
+}
+
+message Transfer {
+  string id = 1;
+  double amount = 2;
+  int64 created_at = 3;
+  string type = 4;
+  string direction = 5;
+  optional string product_name = 6;
+  optional double commission_rate = 7;
+}
+
+message GetUserTransfersResponse {
+  repeated Transfer transfers = 1;
+}

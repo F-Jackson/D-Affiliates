@@ -9,6 +9,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as crypto from 'crypto';
 import { User, UserDocument } from '../schemas/user.schema';
+import { GetUserTransfersResponse } from 'src/proto/service_affiliates.proto';
 
 const ALLOWED_AFFILIATE_COUNTRY = [
   // Tier 1 — Professional creators / high maturity in affiliates
@@ -193,7 +194,7 @@ export class AffiliateService {
 
   private async fetchExternalTransactions(
     affiliateIds: string[],
-  ): Promise<any[]> {
+  ): Promise<GetUserTransfersResponse> {
     return [];
   }
 
