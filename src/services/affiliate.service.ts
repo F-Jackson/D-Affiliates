@@ -31,6 +31,7 @@ import {
 import { decrypt, encrypt } from 'src/security/aes/encrypt.util';
 import { AffiliatedEntity } from 'src/entities/affiliated.entity';
 import { TransferEntity } from 'src/entities/transfer.entity';
+import { TransactionEntity } from 'src/entities/transaction.entity';
 
 const ALLOWED_AFFILIATE_COUNTRY = [
   // Tier 1 — Professional creators / high maturity in affiliates
@@ -201,7 +202,7 @@ export class AffiliateService implements OnModuleInit {
   async syncTransfers(userId: string) {
     const manager = getTransactionManager(this);
     const userRepo = manager.getRepository(UserEntity);
-    const transferRepo = manager.getRepository(TransferEntity);
+    const transactionRepo = manager.getRepository(TransactionEntity);
     const affRepo = manager.getRepository(AffiliatedEntity);
 
     if (!userId || userId.trim().length === 0) {
@@ -230,45 +231,72 @@ export class AffiliateService implements OnModuleInit {
       const BATCH_SIZE = 100;
       let idx = 0;
 
-      while(true) {
-        const affsIds = user.affiliateds.slice((idx - 1) * BATCH_SIZE, idx * BATCH_SIZE);
-        let affs = await affRepo.find({where: {id: In(affsIds), createdAt: LessThanOrEqual(threeMonthsAgo)}});
-        affs = await Promise.all(affs.map(async (a) => ({...a, userId: await decrypt(a.userId, 'sha3')})));
+      while (true) {
+        const affsIds = user.affiliateds.slice(
+          (idx - 1) * BATCH_SIZE,
+          idx * BATCH_SIZE,
+        );
+        let affs = await affRepo.find({
+          where: {
+            id: In(affsIds),
+            createdAt: LessThanOrEqual(threeMonthsAgo),
+          },
+        });
+        affs = await Promise.all(
+          affs.map(async (a) => ({
+            ...a,
+            userId: await decrypt(a.userId, 'sha3'),
+          })),
+        );
 
-      const affUserIds = await Promise.all(
-        affs.map(
-          async (a) => a.userId
-        ),
-      );
+        const affUserIds = await Promise.all(affs.map(async (a) => a.userId));
 
-      const transactions = await this.fetchExternalTransactions(affUserIds);
+        const transactions = await this.fetchExternalTransactions(affUserIds);
+        const newTxs: TransactionEntity[] = [];
 
-      transactions.forEach((tx) => {
-        const affiliated = affs.find((a) => a.userId === tx.userId);
+        for (const tx of transactions) {
+          try {
+            const affiliated = affs.find((a) => a.userId === tx.userId);
 
-        if (affiliated) {
-          const existingTx = affiliated.transactions.find(
-            (t) => t.id === tx.id,
-          );
-          if (!existingTx && tx.product_name && tx.commission_rate) {
-            affiliated.transactions.push({
-              id: tx.id,
-              amount: tx.amount,
-              productName: tx.product_name,
-              commissionRate: tx.commission_rate,
-              transactionId: tx.id,
-              date: new Date(tx.created_at * 1000),
-              direction: tx.direction as 'in' | 'out',
-            });
-          }
+            if (affiliated) {
+              const existingTx = affiliated.transactions.find(
+                async (t) => (await decrypt(t.transactionId, 'sha3')) === tx.id,
+              );
+
+              if (!existingTx && tx.product_name && tx.commission_rate) {
+                const data = {
+                  amount: await encrypt(tx.amount, false, 'sha3'),
+                  productName: await encrypt(tx.product_name, false, 'sha3'),
+                  commissionRate: await encrypt(
+                    tx.commission_rate,
+                    false,
+                    'sha3',
+                  ),
+                  transactionId: await encrypt(tx.id, false, 'sha3'),
+                  date: await encrypt(
+                    new Date(tx.created_at * 1000),
+                    false,
+                    'sha3',
+                  ),
+                  direction: await encrypt(tx.direction, false, 'sha3'),
+                };
+
+                const newTransaction = transactionRepo.create(data);
+                newTxs.push(newTransaction);
+              }
+            }
+          } catch (e: any) {}
         }
-      });
+
+        await transactionRepo.save(newTxs);
+
+        if (affsIds.length >= BATCH_SIZE) break;
 
         idx++;
       }
 
-      user.transferSyncStatus = 'completed';
-      const savedUser = await user.save();
+      user.transferSyncStatus = ENUM_TRANSFER_SYNC_STATUS[2];
+      const savedUser = await userRepo.save(user);
 
       this.logger.log(`Transfers synced for ${userId}`);
       return savedUser;
@@ -278,8 +306,8 @@ export class AffiliateService implements OnModuleInit {
         error.message,
       );
 
-      user.transferSyncStatus = 'failed';
-      await user.save();
+      user.transferSyncStatus = ENUM_TRANSFER_SYNC_STATUS[3];
+      await userRepo.save(user);
 
       throw error;
     }
