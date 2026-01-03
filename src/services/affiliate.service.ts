@@ -124,7 +124,7 @@ export class AffiliateService implements OnModuleInit {
         transferSyncStatus: await encrypt(ENUM_TRANSFER_SYNC_STATUS[0], false, 'sha3'),
       });
 
-      const savedUser = await newUser.save();
+      const savedUser = await userRepo.save(newUser);
       this.logger.log(`New user registered: ${userId} (${country})`);
       return savedUser;
     } catch (error) {
