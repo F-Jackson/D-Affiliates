@@ -149,16 +149,14 @@ export class AffiliateService implements OnModuleInit {
     }
 
     try {
-      const alreadyAffiliated = await this.userModel.findOne({
-        'affiliateds.userId': userId,
-      });
+      const alreadyAffiliated = await affRepo.findOne({where: { user: {userId} }, relations: ['user']});
       if (alreadyAffiliated) {
         throw new ConflictException(
           `User ${userId} is already affiliated with another code`,
         );
       }
 
-      const user = await this.userModel.findOne({ affiliateCode });
+      const user = await userRepo.findOne({ where: {affiliateCode} });
       if (!user) {
         throw new NotFoundException(`User ${userId} not found`);
       }
