@@ -12,6 +12,7 @@ import {
   Transactional,
 } from 'src/common/transactional.decorator';
 import { UserEntity } from 'src/entities/user.entity';
+import { decrypt, encrypt } from 'src/security/aes/encrypt.util';
 import { DataSource } from 'typeorm';
 
 @Injectable()
@@ -33,7 +34,9 @@ export class StatsService {
     }
 
     try {
-      const user = await this.userModel.findOne({ userId });
+      const user = await userRepo.findOne({
+        where: { userId: await encrypt(userId, false, 'sha3') },
+      });
       if (!user) {
         throw new NotFoundException(`User ${userId} not found`);
       }
@@ -48,22 +51,32 @@ export class StatsService {
     }
   }
 
+  @Transactional({ isolationLevel: 'READ COMMITTED' })
   async getAffiliatedStats(userId: string) {
+    const manager = getTransactionManager(this);
+    const userRepo = manager.getRepository(UserEntity);
+
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId is required');
     }
 
     try {
-      const user = await this.userModel.findOne({ userId });
+      const user = await userRepo.findOne({
+        where: { userId: await encrypt(userId, false, 'sha3') },
+        relations: ['stats', 'transfers', 'constracts'],
+      });
       if (!user) {
         throw new NotFoundException(`User ${userId} not found`);
       }
 
       const stats = user.stats;
 
-      return {
-        affiliateCode: user.affiliateCode,
-        status: user.status,
+      const result = {
+        affiliateCode: await decrypt(user.affiliateCode, 'sha3'),
+        status: {
+          m: await decrypt(stats.numberOfAffiliates, 'sha3'),
+          a: await decrypt(st),
+        },
         stats: stats
           ? {
               totalEarnings: stats.totalEarnings,

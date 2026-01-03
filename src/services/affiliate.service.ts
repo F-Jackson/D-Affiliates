@@ -31,6 +31,7 @@ import {
 import { decrypt, encrypt } from 'src/security/aes/encrypt.util';
 import { AffiliatedEntity } from 'src/entities/affiliated.entity';
 import { TransactionEntity } from 'src/entities/transaction.entity';
+import { StatsEntity } from 'src/entities/stats.entity';
 
 const ALLOWED_AFFILIATE_COUNTRY = [
   // Tier 1 — Professional creators / high maturity in affiliates
@@ -106,6 +107,7 @@ export class AffiliateService implements OnModuleInit {
   async registerUser(userId: string, country: string) {
     const manager = getTransactionManager(this);
     const userRepo = manager.getRepository(UserEntity);
+    const statsRepo = manager.getRepository(StatsEntity);
 
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId is required');
@@ -143,6 +145,13 @@ export class AffiliateService implements OnModuleInit {
         ),
       });
 
+      const newStats = statsRepo.create({
+        user: newUser,
+      });
+
+      newUser.stats = newStats;
+
+      await statsRepo.save(newStats);
       const savedUser = await userRepo.save(newUser);
       this.logger.log(`New user registered: ${userId} (${country})`);
       return savedUser;
