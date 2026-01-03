@@ -71,13 +71,6 @@ export class StatsService {
       }
 
       const stats = user.stats;
-      const ALGO = 'sha3';
-
-      const decryptString = async (value?: string) =>
-        value ? await decrypt(value, ALGO) : undefined;
-
-      const decryptNumber = async (value?: string) =>
-        value ? Number(await decrypt(value, ALGO)) : undefined;
 
       const result = {
         affiliateCode: await decryptString(user.affiliateCode),

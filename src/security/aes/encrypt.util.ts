@@ -44,3 +44,12 @@ export async function decrypt(
     throw error;
   }
 }
+
+export const decryptString = async (value?: string) =>
+  value ? await decrypt(value, 'sha3') : undefined;
+
+export const decryptNumber = async (value?: string) =>
+  value ? Number(await decrypt(value, 'sha3')) : undefined;
+
+export const decryptDate = async (value?: string) =>
+  value ? new Date(await decrypt(value, 'sha3')) : undefined;
