@@ -135,12 +135,19 @@ export class StatsService {
     }
   }
 
+  @Transactional({ isolationLevel: 'READ COMMITTED' })
   async adminSendContractPendingToAffiliate(userId: string) {
+    const manager = getTransactionManager(this);
+    const userRepo = manager.getRepository(UserEntity);
+
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId is required');
     }
 
-    const user = await this.userModel.findOne({ userId });
+    const user = await userRepo.findOne({
+        where: { userId: await encrypt(userId, false, 'sha3') },
+        relations: ['constracts'],
+      });
     if (!user) {
       throw new NotFoundException(`User ${userId} not found`);
     }
