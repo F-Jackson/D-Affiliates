@@ -69,13 +69,13 @@ export class AffiliateService implements OnModuleInit {
 
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
-    @Inject('SERVICES_AFFILIATES_GRPC') private readonly client: ClientGrpc,
+    @Inject('SERVICES_AFFILIATES_PACKAGE') private readonly client: ClientGrpc,
     private readonly configService: ConfigService,
   ) {}
 
   onModuleInit() {
     this.affiliatesGrpcClient = this.client.getService<AffiliatesGrpcClient>(
-      'ServicesAffiliatesGrpc',
+      'ServiceAffiliatesService',
     );
   }
 

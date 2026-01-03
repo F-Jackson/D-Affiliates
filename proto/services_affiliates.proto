@@ -2,6 +2,11 @@ syntax = "proto3";
 
 package services_affiliates;
 
+service ServiceAffiliatesService {
+  rpc GetUserTransfers (GetUserTransfersRequest)
+    returns (GetUserTransfersResponse);
+}
+
 message GetUserTransfersRequest {
   string user_id = 1;
 }

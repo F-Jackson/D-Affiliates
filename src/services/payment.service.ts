@@ -63,7 +63,6 @@ export class PaymentService {
 
     // Period earnings (unused and completed transactions)
     const totalEarningsPeriod = notUsedTransactions
-      .filter((t) => t.status === 'approved')
       .reduce((sum, t) => sum + t.amount, 0);
 
     // Total unused transactions
