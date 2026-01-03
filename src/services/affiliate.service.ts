@@ -30,7 +30,6 @@ import {
 } from 'src/entities/user.entity';
 import { decrypt, encrypt } from 'src/security/aes/encrypt.util';
 import { AffiliatedEntity } from 'src/entities/affiliated.entity';
-import { TransferEntity } from 'src/entities/transfer.entity';
 import { TransactionEntity } from 'src/entities/transaction.entity';
 
 const ALLOWED_AFFILIATE_COUNTRY = [
@@ -341,20 +340,31 @@ export class AffiliateService implements OnModuleInit {
     return 'AFF_' + crypto.randomBytes(12).toString('hex').toUpperCase();
   }
 
+  @Transactional({ isolationLevel: 'READ COMMITTED' })
   async getAffiliatesList(page: number) {
     const pageSize = 20;
     const skip = (page - 1) * pageSize;
 
-    const users = await this.userModel
-      .find({})
-      .skip(skip)
-      .limit(pageSize)
-      .select('_id affiliateCode createdAt');
+    const manager = getTransactionManager(this);
+    const userRepo = manager.getRepository(UserEntity);
 
-    const totalUsers = await this.userModel.countDocuments();
+    const users = await userRepo.find({
+      skip,
+      take: pageSize,
+      select: ['id', 'affiliateCode', 'createdAt'],
+    });
+
+    const totalUsers = users.length;
+    const affiliates = await Promise.all(
+      users.map(async (user) => ({
+        id: user.id,
+        affiliateCode: await decrypt(user.affiliateCode, 'sha3'),
+        createdAt: user.createdAt,
+      })),
+    );
 
     return {
-      affiliates: users,
+      affiliates,
       currentPage: page,
       totalPages: Math.ceil(totalUsers / pageSize),
       totalAffiliates: totalUsers,
