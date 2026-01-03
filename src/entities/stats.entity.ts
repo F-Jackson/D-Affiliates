@@ -4,7 +4,9 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToOne,
 } from 'typeorm';
+import { UserEntity } from './user.entity';
 
 @Entity({ name: 'affiliates_stats' })
 export class StatsEntity {
@@ -31,6 +33,9 @@ export class StatsEntity {
 
   @Column({ type: 'text', nullable: true })
   usedTransactionIds?: string;
+
+  @OneToOne(() => UserEntity, (user) => user.stats)
+  user: UserEntity;
 
   @CreateDateColumn()
   createdAt: Date;

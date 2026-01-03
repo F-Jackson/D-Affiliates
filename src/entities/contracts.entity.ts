@@ -4,7 +4,9 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
 } from 'typeorm';
+import { UserEntity } from './user.entity';
 
 export const ENUM_CONTRACT_STATUS = [
   'waiting-payment',
@@ -43,6 +45,11 @@ export class ContractsEntity {
 
   @Column({ type: 'text', nullable: true })
   transcationsIds?: string;
+
+  @ManyToOne(() => UserEntity, (user) => user.transfers, {
+    onDelete: 'CASCADE',
+  })
+  user: UserEntity;
 
   @CreateDateColumn()
   createdAt: Date;

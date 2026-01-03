@@ -4,7 +4,9 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
 } from 'typeorm';
+import { AffiliatedEntity } from './affiliated.entity';
 
 export const ENUM_TRANSACTION_DIRECTION = ['in', 'out'];
 
@@ -33,6 +35,11 @@ export class TransactionEntity {
 
   @Column({ type: 'text' })
   transactionId: string;
+
+  @ManyToOne(() => AffiliatedEntity, (affiliated) => affiliated.transactions, {
+    onDelete: 'CASCADE',
+  })
+  affiliated: AffiliatedEntity;
 
   @CreateDateColumn()
   createdAt: Date;
