@@ -5,7 +5,7 @@ import { UserDocument } from '../entities/user.entity';
 import { readFileSync } from 'fs';
 import { SignPdf } from 'node-signpdf';
 import { P12Signer } from '@signpdf/signer-p12';
-import { ContractsDocument } from 'src/entities/contracts.schema';
+import { ContractsDocument } from 'src/entities/contracts.entity';
 
 @Injectable()
 export class ContractService {
