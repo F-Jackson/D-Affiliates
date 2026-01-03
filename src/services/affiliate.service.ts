@@ -232,9 +232,12 @@ export class AffiliateService implements OnModuleInit {
 
       while (true) {
         const affsIds = user.affiliateds.slice(
-          (idx - 1) * BATCH_SIZE,
           idx * BATCH_SIZE,
+          (idx + 1) * BATCH_SIZE,
         );
+
+        if (affsIds.length === 0) break;
+
         let affs = await affRepo.find({
           where: {
             id: In(affsIds),
@@ -258,8 +261,13 @@ export class AffiliateService implements OnModuleInit {
             const affiliated = affs.find((a) => a.userId === tx.userId);
 
             if (affiliated) {
+              const txDecryptedIds = await Promise.all(
+                affiliated.transactions.map((t) =>
+                  decrypt(t.transactionId, 'sha3'),
+                ),
+              );
               const existingTx = affiliated.transactions.find(
-                async (t) => (await decrypt(t.transactionId, 'sha3')) === tx.id,
+                (t, i) => txDecryptedIds[i] === tx.id,
               );
 
               if (!existingTx && tx.product_name && tx.commission_rate) {
@@ -294,7 +302,11 @@ export class AffiliateService implements OnModuleInit {
         idx++;
       }
 
-      user.transferSyncStatus = ENUM_TRANSFER_SYNC_STATUS[2];
+      user.transferSyncStatus = await encrypt(
+        ENUM_TRANSFER_SYNC_STATUS[2],
+        false,
+        'sha3',
+      );
       const savedUser = await userRepo.save(user);
 
       this.logger.log(`Transfers synced for ${userId}`);
@@ -305,7 +317,11 @@ export class AffiliateService implements OnModuleInit {
         error.message,
       );
 
-      user.transferSyncStatus = ENUM_TRANSFER_SYNC_STATUS[3];
+      user.transferSyncStatus = await encrypt(
+        ENUM_TRANSFER_SYNC_STATUS[3],
+        false,
+        'sha3',
+      );
       await userRepo.save(user);
 
       throw error;
@@ -348,13 +364,11 @@ export class AffiliateService implements OnModuleInit {
     const manager = getTransactionManager(this);
     const userRepo = manager.getRepository(UserEntity);
 
-    const users = await userRepo.find({
+    const [users, totalUsers] = await userRepo.findAndCount({
       skip,
       take: pageSize,
-      select: ['id', 'affiliateCode', 'createdAt'],
     });
 
-    const totalUsers = users.length;
     const affiliates = await Promise.all(
       users.map(async (user) => ({
         id: user.id,
