@@ -12,6 +12,7 @@ import { Model } from 'mongoose';
 import * as crypto from 'crypto';
 import { User, UserDocument } from '../schemas/user.schema';
 import {
+  ExternalTransfer,
   GetUserTransfersRequest,
   GetUserTransfersResponse,
 } from 'src/proto/service_affiliates.proto';
@@ -217,8 +218,29 @@ export class AffiliateService implements OnModuleInit {
 
   private async fetchExternalTransactions(
     affiliateIds: string[],
-  ): Promise<GetUserTransfersResponse> {
-    return [];
+  ): Promise<ExternalTransfer> {
+    const allTransfers: ExternalTransfer[] = [];
+
+    for (const affiliateId of affiliateIds) {
+      const response = await lastValueFrom(
+        this.affiliatesGrpcService.GetUserTransfers({
+          user_id: affiliateId,
+        }),
+      );
+
+      const mappedTransfers = response.transfers.map((t) => ({
+        id: t.id,
+        amount: t.amount,
+        productName: t.productName,
+        commissionRate: t.commissionRate,
+        affiliateId,
+        date: t.createdAt ? new Date(t.createdAt.seconds * 1000) : undefined,
+      }));
+
+      allTransfers.push(...mappedTransfers);
+    }
+
+    return allTransfers;
   }
 
   private generateAffiliateCode() {
