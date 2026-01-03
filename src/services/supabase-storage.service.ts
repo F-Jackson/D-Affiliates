@@ -16,7 +16,7 @@ export interface UploadedFile {
 export class SupabaseStorageService {
   private readonly logger = new Logger(SupabaseStorageService.name);
   private supabase: SupabaseClient | null = null;
-  private readonly BUCKET_NAME = 'email-attachments';
+  private readonly BUCKET_NAME = 'affiliates-attachments';
   private initialized = false;
 
   constructor() {
