@@ -18,7 +18,7 @@ import { Metadata } from '@grpc/grpc-js';
 import { ConfigService } from '@nestjs/config';
 import { v4 as uuidv4 } from 'uuid';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { DataSource, In, LessThanOrEqual } from 'typeorm';
 import {
   getTransactionManager,
   Transactional,
@@ -202,6 +202,7 @@ export class AffiliateService implements OnModuleInit {
     const manager = getTransactionManager(this);
     const userRepo = manager.getRepository(UserEntity);
     const transferRepo = manager.getRepository(TransferEntity);
+    const affRepo = manager.getRepository(AffiliatedEntity);
 
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId is required');
@@ -209,7 +210,6 @@ export class AffiliateService implements OnModuleInit {
 
     const user = await userRepo.findOne({
       where: { userId: await encrypt(userId, false, 'sha3') },
-      relations: ['affiliateds'],
     });
     if (!user) {
       throw new NotFoundException(`User ${userId} not found`);
@@ -226,19 +226,25 @@ export class AffiliateService implements OnModuleInit {
       const threeMonthsAgo = new Date(
         Date.now() - 60 * 60 * 1000 * 24 * 30 * 3,
       );
-      const affiliatesToCalculate = user.affiliateds.filter((aff) => {
-        return aff.createdAt <= threeMonthsAgo;
-      });
+
+      const BATCH_SIZE = 100;
+      let idx = 0;
+
+      while(true) {
+        const affsIds = user.affiliateds.slice((idx - 1) * BATCH_SIZE, idx * BATCH_SIZE);
+        let affs = await affRepo.find({where: {id: In(affsIds), createdAt: LessThanOrEqual(threeMonthsAgo)}});
+        affs = await Promise.all(affs.map(async (a) => ({...a, userId: await decrypt(a.userId, 'sha3')})));
 
       const affUserIds = await Promise.all(
-        affiliatesToCalculate.map(
-          async (a) => await decrypt(a.user.userId, 'sha3'),
+        affs.map(
+          async (a) => a.userId
         ),
       );
+
       const transactions = await this.fetchExternalTransactions(affUserIds);
 
       transactions.forEach((tx) => {
-        let affiliated: AffiliatedEntity | undefined = undefined;
+        const affiliated = affs.find((a) => a.userId === tx.userId);
 
         if (affiliated) {
           const existingTx = affiliated.transactions.find(
@@ -257,6 +263,9 @@ export class AffiliateService implements OnModuleInit {
           }
         }
       });
+
+        idx++;
+      }
 
       user.transferSyncStatus = 'completed';
       const savedUser = await user.save();
