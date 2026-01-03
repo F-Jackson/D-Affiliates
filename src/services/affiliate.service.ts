@@ -16,8 +16,10 @@ import {
   GetUserTransfersRequest,
   GetUserTransfersResponse,
 } from 'src/proto/service_affiliates.proto';
-import { Observable } from 'rxjs';
 import type { ClientGrpc } from '@nestjs/microservices';
+import { Metadata } from '@grpc/grpc-js';
+import { ConfigService } from '@nestjs/config';
+import { v4 as uuidv4 } from 'uuid';
 
 const ALLOWED_AFFILIATE_COUNTRY = [
   // Tier 1 — Professional creators / high maturity in affiliates
@@ -52,26 +54,40 @@ const ALLOWED_AFFILIATE_COUNTRY = [
   'AE', // United Arab Emirates
 ];
 
-export interface AffiliatesGrpcService {
+export interface AffiliatesGrpcClient {
   GetUserTransfers(
-    request: GetUserTransfersRequest,
-  ): Observable<GetUserTransfersResponse>;
+    data: GetUserTransfersRequest,
+    metadata?: Metadata,
+  ): Promise<GetUserTransfersResponse>;
 }
 
 @Injectable()
 export class AffiliateService implements OnModuleInit {
   private readonly logger = new Logger(AffiliateService.name);
 
-  private affiliatesGrpcService: AffiliatesGrpcService;
+  private affiliatesGrpcClient: AffiliatesGrpcClient;
 
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @Inject('SERVICES_AFFILIATES_GRPC') private readonly client: ClientGrpc,
+    private readonly configService: ConfigService,
   ) {}
 
   onModuleInit() {
-    this.affiliatesGrpcService =
-      this.client.getService<AffiliatesGrpcService>('AffiliatesService');
+    this.affiliatesGrpcClient = this.client.getService<AffiliatesGrpcClient>(
+      'ServicesAffiliatesGrpc',
+    );
+  }
+
+  private createMetadata(): Metadata {
+    const apiKey =
+      this.configService.get<string>('SERVICES_AFFILIATES_API_KEY') || 'X';
+
+    const metadata = new Metadata();
+    metadata.set('idempotency-key', uuidv4());
+    metadata.set('x-api-key', apiKey);
+
+    return metadata;
   }
 
   async registerUser(userId: string, country: string) {
@@ -176,7 +192,7 @@ export class AffiliateService implements OnModuleInit {
 
       transactions.forEach((tx) => {
         const affiliated = user.affiliateds.find(
-          (aff) => aff.userId === tx.affiliateId,
+          (aff) => aff.userId === tx.userId,
         );
         if (affiliated) {
           const existingTx = affiliated.transactions.find(
@@ -220,13 +236,19 @@ export class AffiliateService implements OnModuleInit {
     const allTransfers: ExternalTransfer[] = [];
 
     for (const affiliateId of affiliateIds) {
-      const response = await lastValueFrom(
-        this.affiliatesGrpcService.GetUserTransfers({
+      const response = await this.affiliatesGrpcClient.GetUserTransfers(
+        {
           user_id: affiliateId,
-        }),
+        },
+        this.createMetadata(),
       );
 
-      allTransfers.push(...response.transfers);
+      allTransfers.push(
+        ...response.transfers.map((tx) => ({
+          ...tx,
+          userId: affiliateId,
+        })),
+      );
     }
 
     return allTransfers;

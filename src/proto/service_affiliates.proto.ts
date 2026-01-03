@@ -3,11 +3,20 @@ export interface GetUserTransfersRequest {
 }
 
 export interface GetUserTransfersResponse {
-  transfers: ExternalTransfer[];
+  transfers: {
+    id: string;
+    amount: number;
+    created_at: number;
+    type: string;
+    direction: string;
+    product_name?: string;
+    commission_rate?: number;
+  }[];
 }
 
 export interface ExternalTransfer {
   id: string;
+  userId: string;
   amount: number;
   created_at: number;
   type: string;
