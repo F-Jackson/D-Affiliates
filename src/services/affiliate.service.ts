@@ -7,10 +7,7 @@ import {
   Inject,
   OnModuleInit,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import * as crypto from 'crypto';
-import { User, UserDocument } from '../entities/user.entity';
 import {
   ExternalTransfer,
   GetUserTransfersRequest,
@@ -20,6 +17,10 @@ import type { ClientGrpc } from '@nestjs/microservices';
 import { Metadata } from '@grpc/grpc-js';
 import { ConfigService } from '@nestjs/config';
 import { v4 as uuidv4 } from 'uuid';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import { getTransactionManager, Transactional } from 'src/common/transactional.decorator';
+import { UserEntity } from 'src/entities/user.entity';
 
 const ALLOWED_AFFILIATE_COUNTRY = [
   // Tier 1 — Professional creators / high maturity in affiliates
@@ -68,9 +69,10 @@ export class AffiliateService implements OnModuleInit {
   private affiliatesGrpcClient: AffiliatesGrpcClient;
 
   constructor(
-    @InjectModel(User.name) private userModel: Model<UserDocument>,
     @Inject('SERVICES_AFFILIATES_PACKAGE') private readonly client: ClientGrpc,
     private readonly configService: ConfigService,
+    @InjectDataSource()
+    protected readonly dataSource: DataSource,
   ) {}
 
   onModuleInit() {
@@ -90,7 +92,11 @@ export class AffiliateService implements OnModuleInit {
     return metadata;
   }
 
+  @Transactional({isolationLevel:'READ COMMITTED'})
   async registerUser(userId: string, country: string) {
+    const manager = getTransactionManager(this);
+    const userRepo = manager.getRepository(UserEntity);
+
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId is required');
     }
