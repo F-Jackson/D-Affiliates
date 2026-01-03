@@ -28,7 +28,7 @@ import {
   ENUM_USER_STATUS,
   UserEntity,
 } from 'src/entities/user.entity';
-import { decrypt, encrypt } from 'src/security/aes/encrypt.util';
+import { decryptString, encrypt } from 'src/security/aes/encrypt.util';
 import { AffiliatedEntity } from 'src/entities/affiliated.entity';
 import { TransactionEntity } from 'src/entities/transaction.entity';
 import { StatsEntity } from 'src/entities/stats.entity';
@@ -256,7 +256,7 @@ export class AffiliateService implements OnModuleInit {
         affs = await Promise.all(
           affs.map(async (a) => ({
             ...a,
-            userId: await decrypt(a.userId, 'sha3'),
+            userId: (await decryptString(a.userId)) || '',
           })),
         );
 
@@ -272,7 +272,7 @@ export class AffiliateService implements OnModuleInit {
             if (affiliated) {
               const txDecryptedIds = await Promise.all(
                 affiliated.transactions.map((t) =>
-                  decrypt(t.transactionId, 'sha3'),
+                  decryptString(t.transactionId),
                 ),
               );
               const existingTx = affiliated.transactions.find(
@@ -381,7 +381,7 @@ export class AffiliateService implements OnModuleInit {
     const affiliates = await Promise.all(
       users.map(async (user) => ({
         id: user.id,
-        affiliateCode: await decrypt(user.affiliateCode, 'sha3'),
+        affiliateCode: await decryptString(user.affiliateCode),
         createdAt: user.createdAt,
       })),
     );
