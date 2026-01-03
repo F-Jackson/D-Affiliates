@@ -4,6 +4,9 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToOne,
+  JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { StatsEntity } from './stats.entity';
 import { TransferEntity } from './transfer.entity';
@@ -38,12 +41,20 @@ export class UserEntity {
   @Column({ type: 'text' })
   nextPayment?: string;
 
+  @OneToOne(() => StatsEntity, (stats) => stats.user, {
+    cascade: true,
+    eager: true,
+  })
+  @JoinColumn()
   stats: StatsEntity;
 
+  @OneToMany(() => TransferEntity, (transfer) => transfer.user)
   transfers: TransferEntity[];
 
+  @OneToMany(() => ContractsEntity, (contract) => contract.user)
   contracts: ContractsEntity[];
 
+  @OneToMany(() => AffiliatedEntity, (affiliated) => affiliated.user)
   affiliateds: AffiliatedEntity[];
 
   @CreateDateColumn()
