@@ -70,49 +70,65 @@ export class StatsService {
       }
 
       const stats = user.stats;
+      const ALGO = 'sha3';
+
+      const decryptString = async (value?: string) =>
+        value ? await decrypt(value, ALGO) : undefined;
+
+      const decryptNumber = async (value?: string) =>
+        value ? Number(await decrypt(value, ALGO)) : undefined;
 
       const result = {
-        affiliateCode: await decrypt(user.affiliateCode, 'sha3'),
+        affiliateCode: await decryptString(user.affiliateCode),
+
+        status: await decryptString(user.status),
+
+        numberOfAffiliates: user.affiliateds.length,
+
         stats: {
           ...stats,
-          numberOfAffiliates: stats.numberOfAffiliates
-            ? Number(await decrypt(stats.numberOfAffiliates, 'sha3'))
-            : undefined,
-          pendingWithdrawals: stats.pendingWithdrawals
-            ? Number(await decrypt(stats.pendingWithdrawals, 'sha3'))
-            : undefined,
-          totalEarnings: stats.totalEarnings
-            ? Number(await decrypt(stats.totalEarnings, 'sha3'))
-            : undefined,
-          totalEarningsLastMonth: stats.totalEarningsLastMonth
-            ? Number(await decrypt(stats.totalEarningsLastMonth, 'sha3'))
-            : undefined,
-          totalWithdrawn: stats.totalWithdrawn
-            ? Number(await decrypt(stats.totalWithdrawn, 'sha3'))
-            : undefined,
-          usedTransactionIds: stats.usedTransactionIds
-            ? Number(await decrypt(stats.usedTransactionIds, 'sha3'))
-            : undefined,
+          numberOfAffiliates: await decryptNumber(stats.numberOfAffiliates),
+          pendingWithdrawals: await decryptNumber(stats.pendingWithdrawals),
+          totalEarnings: await decryptNumber(stats.totalEarnings),
+          totalEarningsLastMonth: await decryptNumber(
+            stats.totalEarningsLastMonth,
+          ),
+          totalWithdrawn: await decryptNumber(stats.totalWithdrawn),
         },
-        status: await decrypt(user.status),
-        numberOfAffiliates: user.affiliateds.length,
-        transfers: user.transfers.map((t) => ({
-          amount: Number(await decrypt(t.amount, 'sha3')),
-          status: t.status,
-          failureReason: t.failureReason,
-          details: t.details,
-          completedDate: t.completedDate,
-        })),
-        nextPayment: user.nextPayment,
-        constracts: user.contracts.map((c) => ({
-          contractId: c.contractId,
-          status: c.status,
-          amount: c.amount,
-          confirmedAt: c.confirmedAt,
-          plataform: c.plataform,
-          taxAmount: c.taxAmount,
-        })),
+
+        transfers: await Promise.all(
+          user.transfers.map(async (t) => ({
+            ...t,
+            amount: await decryptNumber(t.amount),
+            status: await decryptString(t.status),
+            failureReason: await decryptString(t.failureReason),
+            details: await decryptString(t.details),
+            internalPaymentProofUrl: await decryptString(
+              t.internalPaymentProofUrl,
+            ),
+            completedDate: t.completedDate
+              ? new Date(await decrypt(t.completedDate))
+              : undefined,
+          })),
+        ),
+
+        nextPayment: user.nextPayment
+          ? new Date(await decrypt(user.nextPayment))
+          : undefined,
+
+        constracts: await Promise.all(
+          user.contracts.map(async (c) => ({
+            contractId: await decryptString(c.contractId),
+            status: await decryptString(c.status),
+            amount: await decryptNumber(c.amount),
+            confirmedAt: c.confirmedAt,
+            plataform: await decryptString(c.plataform),
+            taxAmount: await decryptNumber(c.taxAmount),
+          })),
+        ),
       };
+
+      return result;
     } catch (error) {
       this.logger.error(`Error getting stats for ${userId}:`, error.message);
       throw error;
