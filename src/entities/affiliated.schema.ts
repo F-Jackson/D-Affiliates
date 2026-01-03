@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { TransactionSchema } from './transaction.schema';
-import { Transaction } from './transaction.schema';
+import { TransactionSchema } from './transaction.entity';
+import { Transaction } from './transaction.entity';
 
 @Schema({ timestamps: true })
 export class Affiliated {
