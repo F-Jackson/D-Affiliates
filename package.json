@@ -38,8 +38,10 @@
     "ioredis": "^5.8.2",
     "node-signpdf": "^3.0.0",
     "pdfkit": "^0.17.2",
+    "pg": "^8.16.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "typeorm": "^0.3.28",
     "uuid": "^13.0.0",
     "xss": "^1.0.15"
   },

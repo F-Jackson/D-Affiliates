@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
 import PDFDocument from 'pdfkit';
-import { UserDocument } from '../schemas/user.schema';
+import { UserDocument } from '../entities/user.entity';
 import { readFileSync } from 'fs';
 import { SignPdf } from 'node-signpdf';
 import { P12Signer } from '@signpdf/signer-p12';
-import { ContractsDocument } from 'src/schemas/contracts.schema';
+import { ContractsDocument } from 'src/entities/contracts.schema';
 
 @Injectable()
 export class ContractService {
