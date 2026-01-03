@@ -5,6 +5,9 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { StatsEntity } from './stats.entity';
+import { TransferEntity } from './transfer.entity';
+import { ContractsEntity } from './contracts.entity';
 
 export const ENUM_USER_STATUS = ['active', 'inactive', 'suspended', 'banned'];
 export const ENUM_TRANSFER_SYNC_STATUS = [
@@ -33,6 +36,12 @@ export class UserEntity {
 
   @Column({ type: 'text' })
   nextPayment?: string;
+
+  stats: StatsEntity;
+
+  transfers: TransferEntity[];
+
+  contracts: ContractsEntity[];
 
   @CreateDateColumn()
   createdAt: Date;
