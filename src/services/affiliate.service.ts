@@ -19,10 +19,18 @@ import { ConfigService } from '@nestjs/config';
 import { v4 as uuidv4 } from 'uuid';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { getTransactionManager, Transactional } from 'src/common/transactional.decorator';
-import { ENUM_TRANSFER_SYNC_STATUS, ENUM_USER_STATUS, UserEntity } from 'src/entities/user.entity';
+import {
+  getTransactionManager,
+  Transactional,
+} from 'src/common/transactional.decorator';
+import {
+  ENUM_TRANSFER_SYNC_STATUS,
+  ENUM_USER_STATUS,
+  UserEntity,
+} from 'src/entities/user.entity';
 import { encrypt } from 'src/security/aes/encrypt.util';
 import { AffiliatedEntity } from 'src/entities/affiliated.entity';
+import { TransferEntity } from 'src/entities/transfer.entity';
 
 const ALLOWED_AFFILIATE_COUNTRY = [
   // Tier 1 — Professional creators / high maturity in affiliates
@@ -94,7 +102,7 @@ export class AffiliateService implements OnModuleInit {
     return metadata;
   }
 
-  @Transactional({isolationLevel:'READ COMMITTED'})
+  @Transactional({ isolationLevel: 'READ COMMITTED' })
   async registerUser(userId: string, country: string) {
     const manager = getTransactionManager(this);
     const userRepo = manager.getRepository(UserEntity);
@@ -104,7 +112,9 @@ export class AffiliateService implements OnModuleInit {
     }
 
     try {
-      const existingUser = await userRepo.findOne({ where: {userId: await encrypt(userId, false, 'sha3')} });
+      const existingUser = await userRepo.findOne({
+        where: { userId: await encrypt(userId, false, 'sha3') },
+      });
       if (existingUser) {
         throw new ConflictException('User is already registered');
       }
@@ -121,8 +131,16 @@ export class AffiliateService implements OnModuleInit {
         userId: await encrypt(userId, false, 'sha3'),
         affiliateCode: await encrypt(affiliateCode, false, 'sha3'),
         status: await encrypt(ENUM_USER_STATUS[0], false, 'sha3'),
-        nextPayment: await encrypt(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), false, 'sha3'),
-        transferSyncStatus: await encrypt(ENUM_TRANSFER_SYNC_STATUS[0], false, 'sha3'),
+        nextPayment: await encrypt(
+          new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          false,
+          'sha3',
+        ),
+        transferSyncStatus: await encrypt(
+          ENUM_TRANSFER_SYNC_STATUS[0],
+          false,
+          'sha3',
+        ),
       });
 
       const savedUser = await userRepo.save(newUser);
@@ -134,7 +152,7 @@ export class AffiliateService implements OnModuleInit {
     }
   }
 
-  @Transactional({isolationLevel:'READ COMMITTED'})
+  @Transactional({ isolationLevel: 'READ COMMITTED' })
   async syncAffiliate(userId: string, affiliateCode: string) {
     const manager = getTransactionManager(this);
     const userRepo = manager.getRepository(UserEntity);
@@ -149,14 +167,19 @@ export class AffiliateService implements OnModuleInit {
     }
 
     try {
-      const alreadyAffiliated = await affRepo.findOne({where: { user: {userId} }, relations: ['user']});
+      const alreadyAffiliated = await affRepo.findOne({
+        where: { user: { userId: await encrypt(userId, false, 'sha3') } },
+        relations: ['user'],
+      });
       if (alreadyAffiliated) {
         throw new ConflictException(
           `User ${userId} is already affiliated with another code`,
         );
       }
 
-      const user = await userRepo.findOne({ where: {affiliateCode} });
+      const user = await userRepo.findOne({
+        where: { affiliateCode: await encrypt(affiliateCode, false, 'sha3') },
+      });
       if (!user) {
         throw new NotFoundException(`User ${userId} not found`);
       }
@@ -164,9 +187,8 @@ export class AffiliateService implements OnModuleInit {
       const newAff = affRepo.create({
         user,
       });
-      
-      await affRepo.save(newAff);
 
+      await affRepo.save(newAff);
       this.logger.log(`Affiliate ${userId} synced`);
     } catch (error) {
       this.logger.error(`Error syncing affiliate ${userId}:`, error.message);
@@ -174,19 +196,26 @@ export class AffiliateService implements OnModuleInit {
     }
   }
 
+  @Transactional({ isolationLevel: 'READ COMMITTED' })
   async syncTransfers(userId: string) {
+    const manager = getTransactionManager(this);
+    const userRepo = manager.getRepository(UserEntity);
+    const transferRepo = manager.getRepository(TransferEntity);
+
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId is required');
     }
 
-    const user = await this.userModel.findOne({ userId });
+    const user = await userRepo.findOne({
+      where: { userId: await encrypt(userId, false, 'sha3') },
+    });
     if (!user) {
       throw new NotFoundException(`User ${userId} not found`);
     }
 
     try {
-      user.transferSyncStatus = 'syncing';
-      await user.save();
+      user.transferSyncStatus = await encrypt(ENUM_TRANSFER_SYNC_STATUS[1], false, 'sha3');
+      await userRepo.save(user);
 
       const threeMonthsAgo = new Date(
         Date.now() - 60 * 60 * 1000 * 24 * 30 * 3,
