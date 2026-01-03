@@ -3,8 +3,7 @@ import { RedisModule } from './redis.module';
 import { Module } from '@nestjs/common';
 import { AppDataSource } from '../data-source';
 
-const entities = [
-];
+const entities = [];
 
 @Module({
   imports: [

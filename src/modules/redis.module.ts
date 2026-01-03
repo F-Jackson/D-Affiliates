@@ -4,9 +4,7 @@ import { ConfModule } from './conf.module';
 
 @Global()
 @Module({
-  imports: [
-    ConfModule
-  ],
+  imports: [ConfModule],
   providers: [
     {
       provide: 'REDIS_CLIENT',
