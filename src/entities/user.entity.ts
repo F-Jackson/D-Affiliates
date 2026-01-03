@@ -15,10 +15,10 @@ import { AffiliatedEntity } from './affiliated.entity';
 
 export const ENUM_USER_STATUS = ['active', 'inactive', 'suspended', 'banned'];
 export const ENUM_TRANSFER_SYNC_STATUS = [
+  'pending',
   'syncing',
   'completed',
   'failed',
-  'pending',
 ];
 
 @Entity({ name: 'affiliates_users' })

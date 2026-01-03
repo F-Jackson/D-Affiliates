@@ -20,7 +20,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { getTransactionManager, Transactional } from 'src/common/transactional.decorator';
-import { UserEntity } from 'src/entities/user.entity';
+import { ENUM_TRANSFER_SYNC_STATUS, ENUM_USER_STATUS, UserEntity } from 'src/entities/user.entity';
+import { encrypt } from 'src/security/aes/encrypt.util';
 
 const ALLOWED_AFFILIATE_COUNTRY = [
   // Tier 1 — Professional creators / high maturity in affiliates
@@ -102,7 +103,7 @@ export class AffiliateService implements OnModuleInit {
     }
 
     try {
-      const existingUser = await this.userModel.findOne({ userId });
+      const existingUser = await userRepo.findOne({ where: {userId: await encrypt(userId, false, 'sha3')} });
       if (existingUser) {
         throw new ConflictException('User is already registered');
       }
@@ -115,13 +116,12 @@ export class AffiliateService implements OnModuleInit {
 
       const affiliateCode = this.generateAffiliateCode();
 
-      const newUser = new this.userModel({
-        userId,
-        affiliateCode,
-        status: 'active',
-        affiliateds: [],
-        transfers: [],
-        nextPayment: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      const newUser = userRepo.create({
+        userId: await encrypt(userId, false, 'sha3'),
+        affiliateCode: await encrypt(affiliateCode, false, 'sha3'),
+        status: await encrypt(ENUM_USER_STATUS[0], false, 'sha3'),
+        nextPayment: await encrypt(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), false, 'sha3'),
+        transferSyncStatus: await encrypt(ENUM_TRANSFER_SYNC_STATUS[0], false, 'sha3'),
       });
 
       const savedUser = await newUser.save();
