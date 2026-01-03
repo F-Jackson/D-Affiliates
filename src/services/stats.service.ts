@@ -5,18 +5,29 @@ import {
   BadRequestException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { InjectDataSource } from '@nestjs/typeorm';
 import * as crypto from 'crypto';
-import { User, UserDocument } from '../entities/user.entity';
+import {
+  getTransactionManager,
+  Transactional,
+} from 'src/common/transactional.decorator';
+import { UserEntity } from 'src/entities/user.entity';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class StatsService {
   private readonly logger = new Logger(StatsService.name);
 
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectDataSource()
+    protected readonly dataSource: DataSource,
+  ) {}
 
+  @Transactional({ isolationLevel: 'READ COMMITTED' })
   async adminGetAffiliatedStats(userId: string) {
+    const manager = getTransactionManager(this);
+    const userRepo = manager.getRepository(UserEntity);
+
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId is required');
     }
