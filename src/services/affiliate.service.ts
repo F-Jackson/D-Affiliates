@@ -28,7 +28,7 @@ import {
   ENUM_USER_STATUS,
   UserEntity,
 } from 'src/entities/user.entity';
-import { encrypt } from 'src/security/aes/encrypt.util';
+import { decrypt, encrypt } from 'src/security/aes/encrypt.util';
 import { AffiliatedEntity } from 'src/entities/affiliated.entity';
 import { TransferEntity } from 'src/entities/transfer.entity';
 
@@ -186,6 +186,7 @@ export class AffiliateService implements OnModuleInit {
 
       const newAff = affRepo.create({
         user,
+        userId: await encrypt(userId, false, 'sha3'),
       });
 
       await affRepo.save(newAff);
@@ -208,13 +209,18 @@ export class AffiliateService implements OnModuleInit {
 
     const user = await userRepo.findOne({
       where: { userId: await encrypt(userId, false, 'sha3') },
+      relations: ['affiliateds'],
     });
     if (!user) {
       throw new NotFoundException(`User ${userId} not found`);
     }
 
     try {
-      user.transferSyncStatus = await encrypt(ENUM_TRANSFER_SYNC_STATUS[1], false, 'sha3');
+      user.transferSyncStatus = await encrypt(
+        ENUM_TRANSFER_SYNC_STATUS[1],
+        false,
+        'sha3',
+      );
       await userRepo.save(user);
 
       const threeMonthsAgo = new Date(
@@ -224,14 +230,16 @@ export class AffiliateService implements OnModuleInit {
         return aff.createdAt <= threeMonthsAgo;
       });
 
-      const transactions = await this.fetchExternalTransactions(
-        affiliatesToCalculate.map((a) => a.userId),
+      const affUserIds = await Promise.all(
+        affiliatesToCalculate.map(
+          async (a) => await decrypt(a.user.userId, 'sha3'),
+        ),
       );
+      const transactions = await this.fetchExternalTransactions(affUserIds);
 
       transactions.forEach((tx) => {
-        const affiliated = user.affiliateds.find(
-          (aff) => aff.userId === tx.userId,
-        );
+        let affiliated: AffiliatedEntity | undefined = undefined;
+
         if (affiliated) {
           const existingTx = affiliated.transactions.find(
             (t) => t.id === tx.id,
