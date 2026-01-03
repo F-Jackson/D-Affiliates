@@ -73,22 +73,31 @@ export class StatsService {
 
       const result = {
         affiliateCode: await decrypt(user.affiliateCode, 'sha3'),
-        status: {
-          m: await decrypt(stats.numberOfAffiliates, 'sha3'),
-          a: await decrypt(st),
+        stats: {
+          ...stats,
+          numberOfAffiliates: stats.numberOfAffiliates
+            ? Number(await decrypt(stats.numberOfAffiliates, 'sha3'))
+            : undefined,
+          pendingWithdrawals: stats.pendingWithdrawals
+            ? Number(await decrypt(stats.pendingWithdrawals, 'sha3'))
+            : undefined,
+          totalEarnings: stats.totalEarnings
+            ? Number(await decrypt(stats.totalEarnings, 'sha3'))
+            : undefined,
+          totalEarningsLastMonth: stats.totalEarningsLastMonth
+            ? Number(await decrypt(stats.totalEarningsLastMonth, 'sha3'))
+            : undefined,
+          totalWithdrawn: stats.totalWithdrawn
+            ? Number(await decrypt(stats.totalWithdrawn, 'sha3'))
+            : undefined,
+          usedTransactionIds: stats.usedTransactionIds
+            ? Number(await decrypt(stats.usedTransactionIds, 'sha3'))
+            : undefined,
         },
-        stats: stats
-          ? {
-              totalEarnings: stats.totalEarnings,
-              totalWithdrawn: stats.totalWithdrawn,
-              pendingWithdrawals: stats.pendingWithdrawals,
-              numberOfAffiliates: stats.numberOfAffiliates,
-              totalEarningsLastMonth: stats.totalEarningsLastMonth,
-            }
-          : undefined,
+        status: await decrypt(user.status),
         numberOfAffiliates: user.affiliateds.length,
         transfers: user.transfers.map((t) => ({
-          amount: t.amount,
+          amount: Number(await decrypt(t.amount, 'sha3')),
           status: t.status,
           failureReason: t.failureReason,
           details: t.details,
