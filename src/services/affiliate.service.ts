@@ -161,12 +161,11 @@ export class AffiliateService implements OnModuleInit {
         throw new NotFoundException(`User ${userId} not found`);
       }
 
-      user.affiliateds.push({
-        userId,
-        transactions: [],
-        createdAt: new Date(),
+      const newAff = affRepo.create({
+        user,
       });
-      await user.save();
+      
+      await affRepo.save(newAff);
 
       this.logger.log(`Affiliate ${userId} synced`);
     } catch (error) {

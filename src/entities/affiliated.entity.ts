@@ -15,9 +15,6 @@ export class AffiliatedEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'text' })
-  userId: string;
-
   @OneToMany(() => TransactionEntity, (transaction) => transaction.affiliated)
   transactions: TransactionEntity[];
 
