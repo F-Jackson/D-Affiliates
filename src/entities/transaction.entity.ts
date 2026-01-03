@@ -33,7 +33,7 @@ export class TransactionEntity {
   @Column({ type: 'text' })
   direction: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', unique: true })
   transactionId: string;
 
   @ManyToOne(() => AffiliatedEntity, (affiliated) => affiliated.transactions, {
