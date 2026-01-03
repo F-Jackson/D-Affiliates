@@ -20,15 +20,8 @@ export class Transaction {
   @Prop({ type: Number, min: 0, max: 1, default: 0.1 })
   commissionRate: number;
 
-  @Prop({ type: String })
-  description?: string;
-
-  @Prop({
-    type: String,
-    enum: ['pending', 'approved', 'rejected', 'under_review', 'reversed'],
-    default: 'pending',
-  })
-  status: 'pending' | 'approved' | 'rejected' | 'under_review' | 'reversed';
+  @Prop({ required: true, type: String, enum: ['in', 'out'] })
+  direction: 'in' | 'out';
 
   @Prop({ type: String })
   transactionId: string;

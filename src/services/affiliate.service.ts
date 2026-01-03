@@ -182,17 +182,15 @@ export class AffiliateService implements OnModuleInit {
           const existingTx = affiliated.transactions.find(
             (t) => t.id === tx.id,
           );
-          if (!existingTx) {
+          if (!existingTx && tx.product_name && tx.commission_rate) {
             affiliated.transactions.push({
               id: tx.id,
               amount: tx.amount,
-              productName: tx.productName,
-              commissionRate: tx.commissionRate || 0,
-              description: tx.description || '',
-              transactionId: tx.externalTransactionId || '',
-              status: tx.status || 'pending',
-              paymentProofUrl: tx.paymentProofUrl || '',
-              date: tx.date ? new Date(tx.date) : new Date(),
+              productName: tx.product_name,
+              commissionRate: tx.commission_rate,
+              transactionId: tx.id,
+              date: new Date(tx.created_at * 1000),
+              direction: tx.direction as 'in' | 'out',
             });
           }
         }
@@ -218,7 +216,7 @@ export class AffiliateService implements OnModuleInit {
 
   private async fetchExternalTransactions(
     affiliateIds: string[],
-  ): Promise<ExternalTransfer> {
+  ): Promise<ExternalTransfer[]> {
     const allTransfers: ExternalTransfer[] = [];
 
     for (const affiliateId of affiliateIds) {
@@ -228,16 +226,7 @@ export class AffiliateService implements OnModuleInit {
         }),
       );
 
-      const mappedTransfers = response.transfers.map((t) => ({
-        id: t.id,
-        amount: t.amount,
-        productName: t.productName,
-        commissionRate: t.commissionRate,
-        affiliateId,
-        date: t.createdAt ? new Date(t.createdAt.seconds * 1000) : undefined,
-      }));
-
-      allTransfers.push(...mappedTransfers);
+      allTransfers.push(...response.transfers);
     }
 
     return allTransfers;
