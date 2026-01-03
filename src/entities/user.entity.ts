@@ -1,4 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 export const ENUM_USER_STATUS = ['active', 'inactive', 'suspended', 'banned'];
 export const ENUM_TRANSFER_SYNC_STATUS = [
@@ -27,4 +33,10 @@ export class UserEntity {
 
   @Column({ type: 'text' })
   nextPayment?: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
