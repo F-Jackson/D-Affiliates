@@ -29,6 +29,15 @@ import IdempotencyCheckService from 'src/security/idempotency-check.service';
     ]),
     RedisModule,
     DbModule,
+    {
+        name: 'SERVICES_AFFILIATES_PACKAGE',
+        transport: Transport.GRPC,
+        options: {
+          package: 'services_affiliates',
+          protoPath: join(process.cwd(), 'proto/services_affiliates.proto'),
+          url: process.env.GRPC_URL_AFFILIATES,
+        },
+      },
   ],
   providers: [
     AffiliatedService,

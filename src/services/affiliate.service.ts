@@ -4,12 +4,19 @@ import {
   BadRequestException,
   NotFoundException,
   ConflictException,
+  Inject,
+  OnModuleInit,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as crypto from 'crypto';
 import { User, UserDocument } from '../schemas/user.schema';
-import { GetUserTransfersResponse } from 'src/proto/service_affiliates.proto';
+import {
+  GetUserTransfersRequest,
+  GetUserTransfersResponse,
+} from 'src/proto/service_affiliates.proto';
+import { Observable } from 'rxjs';
+import type { ClientGrpc } from '@nestjs/microservices';
 
 const ALLOWED_AFFILIATE_COUNTRY = [
   // Tier 1 — Professional creators / high maturity in affiliates
@@ -44,11 +51,27 @@ const ALLOWED_AFFILIATE_COUNTRY = [
   'AE', // United Arab Emirates
 ];
 
+export interface AffiliatesGrpcService {
+  GetUserTransfers(
+    request: GetUserTransfersRequest,
+  ): Observable<GetUserTransfersResponse>;
+}
+
 @Injectable()
-export class AffiliateService {
+export class AffiliateService implements OnModuleInit {
   private readonly logger = new Logger(AffiliateService.name);
 
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  private affiliatesGrpcService: AffiliatesGrpcService;
+
+  constructor(
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @Inject('SERVICES_AFFILIATES_GRPC') private readonly client: ClientGrpc,
+  ) {}
+
+  onModuleInit() {
+    this.affiliatesGrpcService =
+      this.client.getService<AffiliatesGrpcService>('AffiliatesService');
+  }
 
   async registerUser(userId: string, country: string) {
     if (!userId || userId.trim().length === 0) {
