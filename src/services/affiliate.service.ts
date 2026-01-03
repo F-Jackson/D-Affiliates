@@ -22,6 +22,7 @@ import { DataSource } from 'typeorm';
 import { getTransactionManager, Transactional } from 'src/common/transactional.decorator';
 import { ENUM_TRANSFER_SYNC_STATUS, ENUM_USER_STATUS, UserEntity } from 'src/entities/user.entity';
 import { encrypt } from 'src/security/aes/encrypt.util';
+import { AffiliatedEntity } from 'src/entities/affiliated.entity';
 
 const ALLOWED_AFFILIATE_COUNTRY = [
   // Tier 1 — Professional creators / high maturity in affiliates
@@ -133,7 +134,12 @@ export class AffiliateService implements OnModuleInit {
     }
   }
 
+  @Transactional({isolationLevel:'READ COMMITTED'})
   async syncAffiliate(userId: string, affiliateCode: string) {
+    const manager = getTransactionManager(this);
+    const userRepo = manager.getRepository(UserEntity);
+    const affRepo = manager.getRepository(AffiliatedEntity);
+
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId is required');
     }
