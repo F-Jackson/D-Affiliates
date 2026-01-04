@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
 import { AffiliatedService } from '../services/affiliated.service';
 import { ContractService } from '../services/contract.service';
-import { PaymentService } from '../services/payment.service';
+import { PaymentService } from '../services/payment/payment.service';
+import { StatsCalculationService } from '../services/payment/stats-calculation.service';
+import { ContractConfirmationService } from '../services/payment/contract-confirmation.service';
+import { TransferManagementService } from '../services/payment/transfer-management.service';
 import { AffiliateService } from '../services/affiliate/affiliate.service';
 import { UserService } from '../services/affiliate/user.service';
 import { AffiliateSyncService } from '../services/affiliate/affiliate-sync.service';
@@ -10,7 +13,7 @@ import { AffiliateListService } from '../services/affiliate/affiliate-list.servi
 import { StatsService } from '../services/stats/stats.service';
 import { StatsQueryService } from '../services/stats/stats-query.service';
 import { StatsMapperService } from '../services/stats/stats-mapper.service';
-import { ContractManagementService } from '../services/stats/contract-management.service';
+import { ContractManagementService as StatsContractManagementService } from '../services/stats/contract-management.service';
 import { AdminController } from '../controllers/admin.controller';
 import { AffiliatesController } from 'src/controllers/grpc.controller';
 import { DbModule } from './db.module';
@@ -39,6 +42,9 @@ import { join } from 'path';
     AffiliatedService,
     ContractService,
     PaymentService,
+    StatsCalculationService,
+    ContractConfirmationService,
+    TransferManagementService,
     AffiliateService,
     UserService,
     AffiliateSyncService,
@@ -47,13 +53,16 @@ import { join } from 'path';
     StatsService,
     StatsQueryService,
     StatsMapperService,
-    ContractManagementService,
+    StatsContractManagementService,
     IdempotencyCheckService,
   ],
   exports: [
     AffiliatedService,
     ContractService,
     PaymentService,
+    StatsCalculationService,
+    ContractConfirmationService,
+    TransferManagementService,
     AffiliateService,
     UserService,
     AffiliateSyncService,
@@ -62,7 +71,7 @@ import { join } from 'path';
     StatsService,
     StatsQueryService,
     StatsMapperService,
-    ContractManagementService,
+    StatsContractManagementService,
     IdempotencyCheckService,
   ],
   controllers: [AdminController, AffiliatesController],

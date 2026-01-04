@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PaymentService } from './payment.service';
+import { PaymentService } from './payment/payment.service';
 import { AffiliateService } from './affiliate/affiliate.service';
 import { StatsService } from './stats/stats.service';
 
