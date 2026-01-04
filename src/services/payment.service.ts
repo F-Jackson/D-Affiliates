@@ -11,7 +11,9 @@ import {
   Transactional,
 } from 'src/common/transactional.decorator';
 import { UserEntity } from 'src/entities/user.entity';
+import { decryptDate, decryptNumber, encrypt } from 'src/security/aes/encrypt.util';
 import { DataSource } from 'typeorm';
+import { StatsMapperService } from './stats/stats-mapper.service';
 
 @Injectable()
 export class PaymentService {
@@ -20,6 +22,7 @@ export class PaymentService {
   constructor(
     @InjectDataSource()
     protected readonly dataSource: DataSource,
+    private readonly mapperService: StatsMapperService,
   ) {}
 
   @Transactional({ isolationLevel: 'READ COMMITTED' })
@@ -27,22 +30,25 @@ export class PaymentService {
     const manager = getTransactionManager(this);
     const userRepo = manager.getRepository(UserEntity);
 
-    const user = await this.userModel.findOne({ userId });
+    const user = await userRepo.findOne({
+      where: { userId: await encrypt(userId, false, 'sha3') },
+      relations: ['affiliateds', 'transfers', 'stats'],
+    });
     if (!user) {
-      throw new NotFoundException(`User ${userId} not found`);
+      throw new NotFoundException(`User not found`);
     }
 
     const now = new Date();
-    if (user.nextPayment && user.nextPayment > now) {
+    const nextPaymentDate = await decryptDate(user.nextPayment);
+    if (nextPaymentDate && nextPaymentDate > now) {
       this.logger.log(
-        `Stats payment for ${userId} is already scheduled for ${user.nextPayment}`,
+        `Stats payment is already scheduled for ${user.nextPayment}`,
       );
       return;
     }
 
-    // Total earnings from all affiliates
     const totalEarnings = user.affiliateds.reduce((sum, aff) => {
-      return sum + aff.transactions.reduce((s, t) => s + t.amount, 0);
+      return sum + aff.transactions.reduce((s, t) => s + await decryptNumber(t.amount), 0);
     }, 0);
 
     // Total withdrawn and pending
