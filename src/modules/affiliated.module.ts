@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AffiliatedService } from '../services/affiliated.service';
-import { ContractService } from '../services/contract.service';
+import { ContractService } from '../services/pdf/contract.service';
 import { PaymentService } from '../services/payment/payment.service';
 import { StatsCalculationService } from '../services/payment/stats-calculation.service';
 import { ContractConfirmationService } from '../services/payment/contract-confirmation.service';
@@ -14,6 +14,9 @@ import { StatsService } from '../services/stats/stats.service';
 import { StatsQueryService } from '../services/stats/stats-query.service';
 import { StatsMapperService } from '../services/stats/stats-mapper.service';
 import { ContractManagementService as StatsContractManagementService } from '../services/stats/contract-management.service';
+import { PdfSecurityService } from '../services/pdf/pdf-security.service';
+import { PdfSectionBuilderService } from '../services/pdf/pdf-section-builder.service';
+import { PdfDocumentBuilderService } from '../services/pdf/pdf-document-builder.service';
 import { AdminController } from '../controllers/admin.controller';
 import { AffiliatesController } from 'src/controllers/grpc.controller';
 import { DbModule } from './db.module';
@@ -41,6 +44,9 @@ import { join } from 'path';
   providers: [
     AffiliatedService,
     ContractService,
+    PdfSecurityService,
+    PdfSectionBuilderService,
+    PdfDocumentBuilderService,
     PaymentService,
     StatsCalculationService,
     ContractConfirmationService,
@@ -59,6 +65,9 @@ import { join } from 'path';
   exports: [
     AffiliatedService,
     ContractService,
+    PdfSecurityService,
+    PdfSectionBuilderService,
+    PdfDocumentBuilderService,
     PaymentService,
     StatsCalculationService,
     ContractConfirmationService,
