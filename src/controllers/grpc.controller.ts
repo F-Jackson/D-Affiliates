@@ -13,7 +13,7 @@ import type {
   AffiliatedStatsResponse,
   PaymentResponse,
   ConfirmContractResponse,
-} from '../proto/affiliates.pb';
+} from '../proto';
 import { AffiliatedService } from '../services/affiliated.service';
 import { ConfigService } from '@nestjs/config';
 import { Metadata } from '@grpc/grpc-js';
@@ -92,13 +92,13 @@ export class AffiliatesController {
 
     try {
       const result = await this.affiliatedService.registerUser(
-        request.userId,
-        request.country,
+        request.user_id || '',
+        request.country || '',
       );
       const resultAny = result;
       return {
         success: true,
-        affiliateCode: resultAny.affiliateCode,
+        affiliate_code: resultAny.affiliateCode,
         message: 'User registered successfully',
       };
     } catch (error) {
@@ -124,8 +124,8 @@ export class AffiliatesController {
 
     try {
       await this.affiliatedService.syncAffiliate(
-        request.userId,
-        request.affiliateCode,
+        request.user_id || '',
+        request.affiliate_code || '',
       );
       return {
         success: true,
@@ -153,7 +153,7 @@ export class AffiliatesController {
     }
 
     try {
-      await this.affiliatedService.syncTransfers(request.userId);
+      await this.affiliatedService.syncTransfers(request.user_id || '');
       return {
         success: true,
         message: 'Transfers synced successfully',
@@ -181,44 +181,44 @@ export class AffiliatesController {
 
     try {
       const statsData = await this.affiliatedService.getAffiliatedStats(
-        request.userId,
+        request.user_id || '',
       );
       
       return {
         success: true,
         message: 'Stats retrieved successfully',
-        affiliateCode: statsData.affiliateCode,
+        affiliate_code: statsData.affiliateCode,
         status: statsData.status,
-        numberOfAffiliates: statsData.numberOfAffiliates,
+        number_of_affiliates: statsData.numberOfAffiliates,
         stats: statsData.stats ? {
-          totalEarnings: statsData.stats.totalEarnings ?? 0,
-          totalWithdrawn: statsData.stats.totalWithdrawn ?? 0,
-          pendingWithdrawals: statsData.stats.pendingWithdrawals ?? 0,
-          numberOfAffiliates: statsData.stats.numberOfAffiliates ?? 0,
-          totalEarningsLastMonth: statsData.stats.totalEarningsLastMonth ?? 0,
-          updatedAt: this.toUnixTimestamp(statsData.stats.updatedAt),
+          total_earnings: statsData.stats.totalEarnings ?? 0,
+          total_withdrawn: statsData.stats.totalWithdrawn ?? 0,
+          pending_withdrawals: statsData.stats.pendingWithdrawals ?? 0,
+          number_of_affiliates: statsData.stats.numberOfAffiliates ?? 0,
+          total_earnings_last_month: statsData.stats.totalEarningsLastMonth ?? 0,
+          updated_at: this.toUnixTimestamp(statsData.stats.updatedAt),
         } : undefined,
         transfers: statsData.transfers?.map((t: any) => ({
           amount: t.amount ?? 0,
           status: (t.status as 'pending' | 'completed' | 'failed') ?? 'pending',
-          failureReason: t.failureReason,
+          failure_reason: t.failureReason,
           details: t.details,
-          completedDate: this.toUnixTimestamp(t.completedDate),
-          internalPaymentProofUrl: t.internalPaymentProofUrl,
-          paymentMethod: t.paymentMethod,
-          transferId: t.transferId,
-          createdAt: this.toUnixTimestamp(t.createdAt),
-          paymentStr: t.paymentStr,
+          completed_date: this.toUnixTimestamp(t.completedDate),
+          internal_payment_proof_url: t.internalPaymentProofUrl,
+          payment_method: t.paymentMethod,
+          transfer_id: t.transferId,
+          created_at: this.toUnixTimestamp(t.createdAt),
+          payment_str: t.paymentStr,
         })),
-        nextPayment: this.toUnixTimestamp(statsData.nextPayment),
+        next_payment: this.toUnixTimestamp(statsData.nextPayment),
         contracts: statsData.constracts?.map((c: any) => ({
-          contractId: c.contractId ?? '',
+          contract_id: c.contractId ?? '',
           status: (c.status as 'pending' | 'confirmed' | 'suspended') ?? 'pending',
           amount: c.amount ?? 0,
-          confirmedAt: this.toUnixTimestamp(c.confirmedAt),
+          confirmed_at: this.toUnixTimestamp(c.confirmedAt),
           platform: c.plataform,
-          taxAmount: c.taxAmount,
-          transactionIds: c.transcationsIds,
+          tax_amount: c.taxAmount,
+          transaction_ids: c.transcationsIds,
         })),
       };
     } catch (error) {
@@ -243,7 +243,7 @@ export class AffiliatesController {
     }
 
     try {
-      await this.affiliatedService.makeStatsPayment(request.userId);
+      await this.affiliatedService.makeStatsPayment(request.user_id || '');
       return {
         success: true,
         message: 'Stats payment made successfully',
@@ -271,15 +271,15 @@ export class AffiliatesController {
 
     try {
       await this.affiliatedService.confirmContract(
-        request.userId,
-        request.contractId,
-        request.code,
-        request.paymentMethod,
+        request.user_id || '',
+        request.contract_id || '',
+        request.code || '',
+        request.payment_method || '',
       );
       return {
         success: true,
         message: 'Contract confirmed successfully',
-        contractId: request.contractId,
+        contract_id: request.contract_id,
       };
     } catch (error) {
       return {

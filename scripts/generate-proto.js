@@ -4,8 +4,9 @@ const { execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
-const protoDir = path.join(__dirname, 'proto');
-const srcProtoDir = path.join(__dirname, 'src', 'proto');
+const projectRoot = path.join(__dirname, '..');
+const protoDir = path.join(projectRoot, 'proto');
+const srcProtoDir = path.join(projectRoot, 'src', 'proto');
 
 // Criar diretório de saída se não existir
 if (!fs.existsSync(srcProtoDir)) {
@@ -26,11 +27,12 @@ protoFiles.forEach((protoFile) => {
   try {
     console.log(`📝 Gerando TypeScript para ${protoFile}...`);
     
+    // Usar proto-loader-gen-types com caminho absoluto
     execSync(
-      `npx proto-loader-gen-types --longs=String --enums=json --defaults --keepCase --grpcLib=@grpc/grpc-js --outDir=src/proto proto/${protoFile}`,
+      `npx proto-loader-gen-types --longs=String --enums=json --defaults --keepCase --grpcLib=@grpc/grpc-js --outDir=${srcProtoDir} ${fullPath}`,
       {
         stdio: 'inherit',
-        cwd: __dirname,
+        cwd: projectRoot,
       }
     );
     
@@ -42,3 +44,4 @@ protoFiles.forEach((protoFile) => {
 });
 
 console.log('✨ Todos os arquivos proto foram gerados com sucesso!');
+
