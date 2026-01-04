@@ -75,7 +75,14 @@ export type {
   Transfer__Output as ServiceTransfer__Output,
 } from './services_affiliates/Transfer';
 
-// Legacy types for backwards compatibility
-export type {
-  ExternalTransfer,
-} from './service_affiliates.proto';
+// External Transfer type for transaction sync
+export interface ExternalTransfer {
+  id: string;
+  userId: string;
+  amount: number;
+  created_at: number;
+  type: string;
+  direction: string;
+  product_name?: string;
+  commission_rate?: number;
+}

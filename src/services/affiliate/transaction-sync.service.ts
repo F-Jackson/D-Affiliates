@@ -6,8 +6,8 @@ import { v4 as uuidv4 } from 'uuid';
 import type {
   GetUserTransfersRequest,
   GetUserTransfersResponse,
+  ExternalTransfer,
 } from 'src/proto';
-import { ExternalTransfer } from 'src/proto/service_affiliates.proto';
 
 export interface AffiliatesGrpcClient {
   GetUserTransfers(
