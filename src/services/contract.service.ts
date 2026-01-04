@@ -1,17 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
 import PDFDocument from 'pdfkit';
-import { UserDocument } from '../entities/user.entity';
 import { readFileSync } from 'fs';
 import { SignPdf } from 'node-signpdf';
 import { P12Signer } from '@signpdf/signer-p12';
-import { ContractsDocument } from 'src/entities/contracts.entity';
+import { ContractsEntity } from 'src/entities/contracts.entity';
+import { UserEntity } from 'src/entities/user.entity';
 
 @Injectable()
 export class ContractService {
   async generateContractPdf(
-    contract: ContractsDocument,
-    user: UserDocument,
+    contract: ContractsEntity,
+    user: UserEntity,
     version: number,
   ): Promise<{ buffer: Buffer; pdfHash: string; hmac: string }> {
     return new Promise((resolve, reject) => {
@@ -96,7 +96,7 @@ export class ContractService {
 
   private buildHeader(
     pdf: PDFKit.PDFDocument,
-    contract: ContractsDocument,
+    contract: ContractsEntity,
     version: number,
   ): void {
     pdf
@@ -150,7 +150,7 @@ export class ContractService {
 
   private buildOverviewInfo(
     pdf: PDFKit.PDFDocument,
-    contract: ContractsDocument,
+    contract: ContractsEntity,
     version: number,
   ): void {
     pdf.fontSize(11).font('Helvetica-Bold').text('OVERVIEW INFORMATION');
@@ -175,7 +175,7 @@ export class ContractService {
 
   private buildAffiliateInfo(
     pdf: PDFKit.PDFDocument,
-    user: UserDocument,
+    user: UserEntity,
   ): void {
     pdf.fontSize(11).font('Helvetica-Bold').text('AFFILIATE INFORMATION');
 
@@ -197,8 +197,8 @@ export class ContractService {
 
   private buildTransactions(
     pdf: PDFKit.PDFDocument,
-    contract: ContractsDocument,
-    user: UserDocument,
+    contract: ContractsEntity,
+    user: UserEntity,
   ): void {
     if (!contract.transcationsIds?.length) return;
 
@@ -247,8 +247,8 @@ Any modification invalidates the digital signature and integrity hashes.`,
 
   private buildInvisibleWatermark(
     pdf: PDFKit.PDFDocument,
-    contract: ContractsDocument,
-    user: UserDocument,
+    contract: ContractsEntity,
+    user: UserEntity,
   ): void {
     pdf.opacity(0.01);
     pdf
@@ -268,8 +268,8 @@ Any modification invalidates the digital signature and integrity hashes.`,
 
   private buildIntegritySection(
     pdf: PDFKit.PDFDocument,
-    contract: ContractsDocument,
-    user: UserDocument,
+    contract: ContractsEntity,
+    user: UserEntity,
   ): void {
     const payload = {
       referenceId: contract.contractId,
