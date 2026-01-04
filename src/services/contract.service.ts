@@ -22,7 +22,7 @@ export class ContractService {
     user: UserEntity,
     version: number,
   ): Promise<{ buffer: Buffer; pdfHash: string; hmac: string }> {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       try {
         const pdf = new PDFDocument({
           size: 'A4',
@@ -88,7 +88,7 @@ export class ContractService {
         this.buildNotice(pdf);
         this.buildOverviewInfo(pdf, contract, version);
         this.buildAffiliateInfo(pdf, user);
-        this.buildTransactions(pdf, contract, user);
+        await this.buildTransactions(pdf, contract, user);
         this.buildObservations(pdf);
         this.buildInvisibleWatermark(pdf, contract, user);
         this.buildIntegritySection(pdf, contract, user);
@@ -218,7 +218,7 @@ export class ContractService {
 
   /* ---------------- TRANSACTIONS ---------------- */
 
-  private buildTransactions(
+  private async buildTransactions(
     pdf: PDFKit.PDFDocument,
     contract: {
       contractId: string | undefined;
@@ -230,28 +230,30 @@ export class ContractService {
       transcationsIds: string[] | undefined;
     },
     user: UserEntity,
-  ): void {
+  ) {
     if (!contract.transcationsIds?.length) return;
 
     pdf.fontSize(11).font('Helvetica-Bold').text('RELATED TRANSACTIONS');
 
-    contract.transcationsIds.slice(0, 10).forEach((txId: string, i: number) => {
-      const tx = user.affiliateds
-        .flatMap((a) => a.transactions)
-        .find((t) => t.id === txId);
+    contract.transcationsIds
+      .slice(0, 10)
+      .forEach(async (txId: string, i: number) => {
+        const tx = user.affiliateds
+          .flatMap((a) => a.transactions)
+          .find((t) => t.id === txId);
 
-      if (tx) {
-        pdf
-          .fontSize(9)
-          .font('Helvetica')
-          .text(
-            `${i + 1}. $${await decryptNumber(tx.amount)} | ${await decryptString(tx.productName)}`,
-            {
-              indent: 20,
-            },
-          );
-      }
-    });
+        if (tx) {
+          pdf
+            .fontSize(9)
+            .font('Helvetica')
+            .text(
+              `${i + 1}. $${await decryptNumber(tx.amount)} | ${await decryptString(tx.productName)}`,
+              {
+                indent: 20,
+              },
+            );
+        }
+      });
 
     pdf.moveDown(1);
   }
