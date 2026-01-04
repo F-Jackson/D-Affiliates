@@ -11,14 +11,14 @@ import { decryptNumber, decryptString } from 'src/security/aes/encrypt.util';
 export class ContractService {
   async generateContractPdf(
     contract: {
-    contractId: string | undefined;
-    status: string | undefined;
-    amount: number | undefined;
-    confirmedAt: Date | undefined;
-    plataform: string | undefined;
-    taxAmount: number | undefined;
-    transcationsIds: string[] | undefined
-},
+      contractId: string | undefined;
+      status: string | undefined;
+      amount: number | undefined;
+      confirmedAt: Date | undefined;
+      plataform: string | undefined;
+      taxAmount: number | undefined;
+      transcationsIds: string[] | undefined;
+    },
     user: UserEntity,
     version: number,
   ): Promise<{ buffer: Buffer; pdfHash: string; hmac: string }> {
@@ -105,14 +105,14 @@ export class ContractService {
   private buildHeader(
     pdf: PDFKit.PDFDocument,
     contract: {
-    contractId: string | undefined;
-    status: string | undefined;
-    amount: number | undefined;
-    confirmedAt: Date | undefined;
-    plataform: string | undefined;
-    taxAmount: number | undefined;
-    transcationsIds: string[] | undefined
-},
+      contractId: string | undefined;
+      status: string | undefined;
+      amount: number | undefined;
+      confirmedAt: Date | undefined;
+      plataform: string | undefined;
+      taxAmount: number | undefined;
+      transcationsIds: string[] | undefined;
+    },
     version: number,
   ): void {
     pdf
@@ -167,14 +167,14 @@ export class ContractService {
   private buildOverviewInfo(
     pdf: PDFKit.PDFDocument,
     contract: {
-    contractId: string | undefined;
-    status: string | undefined;
-    amount: number | undefined;
-    confirmedAt: Date | undefined;
-    plataform: string | undefined;
-    taxAmount: number | undefined;
-    transcationsIds: string[] | undefined
-},
+      contractId: string | undefined;
+      status: string | undefined;
+      amount: number | undefined;
+      confirmedAt: Date | undefined;
+      plataform: string | undefined;
+      taxAmount: number | undefined;
+      transcationsIds: string[] | undefined;
+    },
     version: number,
   ): void {
     pdf.fontSize(11).font('Helvetica-Bold').text('OVERVIEW INFORMATION');
@@ -199,10 +199,7 @@ export class ContractService {
 
   /* ---------------- AFFILIATE INFO ---------------- */
 
-  private buildAffiliateInfo(
-    pdf: PDFKit.PDFDocument,
-    user: UserEntity,
-  ): void {
+  private buildAffiliateInfo(pdf: PDFKit.PDFDocument, user: UserEntity): void {
     pdf.fontSize(11).font('Helvetica-Bold').text('AFFILIATE INFORMATION');
 
     const items = [
@@ -224,14 +221,14 @@ export class ContractService {
   private buildTransactions(
     pdf: PDFKit.PDFDocument,
     contract: {
-    contractId: string | undefined;
-    status: string | undefined;
-    amount: number | undefined;
-    confirmedAt: Date | undefined;
-    plataform: string | undefined;
-    taxAmount: number | undefined;
-    transcationsIds: string[] | undefined
-},
+      contractId: string | undefined;
+      status: string | undefined;
+      amount: number | undefined;
+      confirmedAt: Date | undefined;
+      plataform: string | undefined;
+      taxAmount: number | undefined;
+      transcationsIds: string[] | undefined;
+    },
     user: UserEntity,
   ): void {
     if (!contract.transcationsIds?.length) return;
@@ -247,9 +244,12 @@ export class ContractService {
         pdf
           .fontSize(9)
           .font('Helvetica')
-          .text(`${i + 1}. $${await decryptNumber(tx.amount)} | ${await decryptString(tx.productName)}`, {
-            indent: 20,
-          });
+          .text(
+            `${i + 1}. $${await decryptNumber(tx.amount)} | ${await decryptString(tx.productName)}`,
+            {
+              indent: 20,
+            },
+          );
       }
     });
 
@@ -282,14 +282,14 @@ Any modification invalidates the digital signature and integrity hashes.`,
   private buildInvisibleWatermark(
     pdf: PDFKit.PDFDocument,
     contract: {
-    contractId: string | undefined;
-    status: string | undefined;
-    amount: number | undefined;
-    confirmedAt: Date | undefined;
-    plataform: string | undefined;
-    taxAmount: number | undefined;
-    transcationsIds: string[] | undefined
-},
+      contractId: string | undefined;
+      status: string | undefined;
+      amount: number | undefined;
+      confirmedAt: Date | undefined;
+      plataform: string | undefined;
+      taxAmount: number | undefined;
+      transcationsIds: string[] | undefined;
+    },
     user: UserEntity,
   ): void {
     pdf.opacity(0.01);
@@ -311,14 +311,14 @@ Any modification invalidates the digital signature and integrity hashes.`,
   private buildIntegritySection(
     pdf: PDFKit.PDFDocument,
     contract: {
-    contractId: string | undefined;
-    status: string | undefined;
-    amount: number | undefined;
-    confirmedAt: Date | undefined;
-    plataform: string | undefined;
-    taxAmount: number | undefined;
-    transcationsIds: string[] | undefined
-},
+      contractId: string | undefined;
+      status: string | undefined;
+      amount: number | undefined;
+      confirmedAt: Date | undefined;
+      plataform: string | undefined;
+      taxAmount: number | undefined;
+      transcationsIds: string[] | undefined;
+    },
     user: UserEntity,
   ): void {
     const payload = {
