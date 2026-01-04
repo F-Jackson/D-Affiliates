@@ -67,7 +67,7 @@ export interface Transfer {
   status: 'pending' | 'completed' | 'failed';
   failureReason?: string;
   details?: string;
-  completedDate?: Date;
+  completedDate?: number;
   internalPaymentProofUrl?: string;
   paymentMethod?: string;
   transferId?: string;
@@ -79,7 +79,7 @@ export interface Contract {
   contractId: string;
   status: 'pending' | 'confirmed' | 'suspended';
   amount: number;
-  confirmedAt?: Date;
+  confirmedAt?: number;
   platform?: string;
   taxAmount?: number;
   transactionIds?: string[];

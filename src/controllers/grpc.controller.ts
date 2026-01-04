@@ -27,6 +27,17 @@ export class AffiliatesController {
     private readonly configService: ConfigService,
   ) {}
 
+  /**
+   * Converte Date para unix timestamp em milissegundos
+   */
+  private toUnixTimestamp(date: any): number | undefined {
+    if (!date) return undefined;
+    if (date instanceof Date) {
+      return date.getTime();
+    }
+    return typeof date === 'number' ? date : undefined;
+  }
+
   private validateApiKey(context: { metadata: Metadata }): void {
     const apiKey = context.metadata.get('x-api-key')?.[0]?.toString();
     const expectedApiKey = this.configService.get<string>('AFFILIATES_API_KEY');
@@ -185,26 +196,26 @@ export class AffiliatesController {
           pendingWithdrawals: statsData.stats.pendingWithdrawals ?? 0,
           numberOfAffiliates: statsData.stats.numberOfAffiliates ?? 0,
           totalEarningsLastMonth: statsData.stats.totalEarningsLastMonth ?? 0,
-          updatedAt: statsData.stats.updatedAt,
+          updatedAt: this.toUnixTimestamp(statsData.stats.updatedAt),
         } : undefined,
         transfers: statsData.transfers?.map((t: any) => ({
           amount: t.amount ?? 0,
           status: (t.status as 'pending' | 'completed' | 'failed') ?? 'pending',
           failureReason: t.failureReason,
           details: t.details,
-          completedDate: t.completedDate,
+          completedDate: this.toUnixTimestamp(t.completedDate),
           internalPaymentProofUrl: t.internalPaymentProofUrl,
           paymentMethod: t.paymentMethod,
           transferId: t.transferId,
-          createdAt: t.createdAt,
+          createdAt: this.toUnixTimestamp(t.createdAt),
           paymentStr: t.paymentStr,
         })),
-        nextPayment: statsData.nextPayment,
+        nextPayment: this.toUnixTimestamp(statsData.nextPayment),
         contracts: statsData.constracts?.map((c: any) => ({
           contractId: c.contractId ?? '',
           status: (c.status as 'pending' | 'confirmed' | 'suspended') ?? 'pending',
           amount: c.amount ?? 0,
-          confirmedAt: c.confirmedAt,
+          confirmedAt: this.toUnixTimestamp(c.confirmedAt),
           platform: c.plataform,
           taxAmount: c.taxAmount,
           transactionIds: c.transcationsIds,
