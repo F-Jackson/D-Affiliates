@@ -1,0 +1,1 @@
+set -a && source /workspaces/D-Affiliates/.env && set +a && env | grep -E "REDIS|GRPC|PORT|NODE_ENV|ADMIN|AFFILIATES|SUPABASE" | sort
