@@ -2,7 +2,11 @@ import { Module } from '@nestjs/common';
 import { AffiliatedService } from '../services/affiliated.service';
 import { ContractService } from '../services/contract.service';
 import { PaymentService } from '../services/payment.service';
-import { AffiliateService } from '../services/affiliate.service';
+import { AffiliateService } from '../services/affiliate/affiliate.service';
+import { UserService } from '../services/affiliate/user.service';
+import { AffiliateSyncService } from '../services/affiliate/affiliate-sync.service';
+import { TransactionSyncService } from '../services/transaction-sync.service';
+import { AffiliateListService } from '../services/affiliate/affiliate-list.service';
 import { StatsService } from '../services/stats.service';
 import { AdminController } from '../controllers/admin.controller';
 import { AffiliatesController } from 'src/controllers/grpc.controller';
@@ -33,6 +37,10 @@ import { join } from 'path';
     ContractService,
     PaymentService,
     AffiliateService,
+    UserService,
+    AffiliateSyncService,
+    TransactionSyncService,
+    AffiliateListService,
     StatsService,
     IdempotencyCheckService,
   ],
@@ -41,6 +49,10 @@ import { join } from 'path';
     ContractService,
     PaymentService,
     AffiliateService,
+    UserService,
+    AffiliateSyncService,
+    TransactionSyncService,
+    AffiliateListService,
     StatsService,
     IdempotencyCheckService,
   ],

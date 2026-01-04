@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PaymentService } from './payment.service';
-import { AffiliateService } from './affiliate.service';
+import { AffiliateService } from './affiliate/affiliate.service';
 import { StatsService } from './stats.service';
 
 @Injectable()
