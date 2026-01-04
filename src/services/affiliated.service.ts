@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { AffiliateService } from './affiliate/affiliate.service';
-import { StatsService } from './stats.service';
+import { StatsService } from './stats/stats.service';
 
 @Injectable()
 export class AffiliatedService {

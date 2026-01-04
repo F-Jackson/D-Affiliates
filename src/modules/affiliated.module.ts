@@ -5,9 +5,12 @@ import { PaymentService } from '../services/payment.service';
 import { AffiliateService } from '../services/affiliate/affiliate.service';
 import { UserService } from '../services/affiliate/user.service';
 import { AffiliateSyncService } from '../services/affiliate/affiliate-sync.service';
-import { TransactionSyncService } from '../services/transaction-sync.service';
+import { TransactionSyncService } from '../services/affiliate/transaction-sync.service';
 import { AffiliateListService } from '../services/affiliate/affiliate-list.service';
-import { StatsService } from '../services/stats.service';
+import { StatsService } from '../services/stats/stats.service';
+import { StatsQueryService } from '../services/stats/stats-query.service';
+import { StatsMapperService } from '../services/stats/stats-mapper.service';
+import { ContractManagementService } from '../services/stats/contract-management.service';
 import { AdminController } from '../controllers/admin.controller';
 import { AffiliatesController } from 'src/controllers/grpc.controller';
 import { DbModule } from './db.module';
@@ -42,6 +45,9 @@ import { join } from 'path';
     TransactionSyncService,
     AffiliateListService,
     StatsService,
+    StatsQueryService,
+    StatsMapperService,
+    ContractManagementService,
     IdempotencyCheckService,
   ],
   exports: [
@@ -54,6 +60,9 @@ import { join } from 'path';
     TransactionSyncService,
     AffiliateListService,
     StatsService,
+    StatsQueryService,
+    StatsMapperService,
+    ContractManagementService,
     IdempotencyCheckService,
   ],
   controllers: [AdminController, AffiliatesController],
