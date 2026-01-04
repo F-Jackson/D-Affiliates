@@ -183,21 +183,24 @@ export class AffiliatesController {
       const statsData = await this.affiliatedService.getAffiliatedStats(
         request.user_id || '',
       );
-      
+
       return {
         success: true,
         message: 'Stats retrieved successfully',
         affiliate_code: statsData.affiliateCode,
         status: statsData.status,
         number_of_affiliates: statsData.numberOfAffiliates,
-        stats: statsData.stats ? {
-          total_earnings: statsData.stats.totalEarnings ?? 0,
-          total_withdrawn: statsData.stats.totalWithdrawn ?? 0,
-          pending_withdrawals: statsData.stats.pendingWithdrawals ?? 0,
-          number_of_affiliates: statsData.stats.numberOfAffiliates ?? 0,
-          total_earnings_last_month: statsData.stats.totalEarningsLastMonth ?? 0,
-          updated_at: this.toUnixTimestamp(statsData.stats.updatedAt),
-        } : undefined,
+        stats: statsData.stats
+          ? {
+              total_earnings: statsData.stats.totalEarnings ?? 0,
+              total_withdrawn: statsData.stats.totalWithdrawn ?? 0,
+              pending_withdrawals: statsData.stats.pendingWithdrawals ?? 0,
+              number_of_affiliates: statsData.stats.numberOfAffiliates ?? 0,
+              total_earnings_last_month:
+                statsData.stats.totalEarningsLastMonth ?? 0,
+              updated_at: this.toUnixTimestamp(statsData.stats.updatedAt),
+            }
+          : undefined,
         transfers: statsData.transfers?.map((t: any) => ({
           amount: t.amount ?? 0,
           status: (t.status as 'pending' | 'completed' | 'failed') ?? 'pending',
@@ -213,7 +216,8 @@ export class AffiliatesController {
         next_payment: this.toUnixTimestamp(statsData.nextPayment),
         contracts: statsData.constracts?.map((c: any) => ({
           contract_id: c.contractId ?? '',
-          status: (c.status as 'pending' | 'confirmed' | 'suspended') ?? 'pending',
+          status:
+            (c.status as 'pending' | 'confirmed' | 'suspended') ?? 'pending',
           amount: c.amount ?? 0,
           confirmed_at: this.toUnixTimestamp(c.confirmedAt),
           platform: c.plataform,
