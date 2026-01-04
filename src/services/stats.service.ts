@@ -182,6 +182,7 @@ export class StatsService {
   async adminMakeContract(userId: string) {
     const manager = getTransactionManager(this);
     const userRepo = manager.getRepository(UserEntity);
+    const contractsRepo = manager.getRepository(ContractsEntity);
 
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId is required');
@@ -223,8 +224,9 @@ export class StatsService {
       const tries = 500000;
 
       while (true) {
+        const encContractId = await encrypt(cdId, false, 'sha3');
         const existingContract = user.contracts.find(
-          (c) => c.contractId === cdId,
+          (c) => c.contractId === encContractId,
         );
         if (!existingContract) break;
 
@@ -236,20 +238,19 @@ export class StatsService {
       }
 
       const newContract = {
-        contractId: cdId,
-        status: 'pending' as const,
-        amount: earnedAmount,
-        secretCode: crypto.randomBytes(4).toString('hex').toUpperCase(),
-        transcationsIds: user.stats?.usedTransactionIds || [],
+        user,
+        contractId: await encrypt(cdId, false, 'sha3'),
+        status: await encrypt('pending', false, 'sha3'),
+        amount: await encrypt(earnedAmount, false, 'sha3'),
+        secretCode: await encrypt(crypto.randomBytes(4).toString('hex').toUpperCase(), false, 'sha3'),
+        transcationsIds: user.stats.usedTransactionIds ? JSON.parse(await decryptString(user.stats.usedTransactionIds) || '[]') : [],
       };
 
-      user.contracts.push(newContract);
-
-      const savedUser = await user.save();
+      const contractEntity = contractsRepo.create(newContract);
+      await contractsRepo.save(contractEntity);
       this.logger.log(
         `Contract created for ${userId} with amount ${earnedAmount}`,
       );
-      return savedUser;
     } catch (error) {
       this.logger.error(
         `Error creating contract for ${userId}:`,
