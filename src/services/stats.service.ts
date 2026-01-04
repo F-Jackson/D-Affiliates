@@ -152,7 +152,12 @@ export class StatsService {
       relations: ['user'],
     });
     if (!contracts) {
-      throw new NotFoundException(`Contracts of: ${userId} not found`);
+      throw new NotFoundException(`Contracts not found`);
+    }
+
+    if (contracts.length === 0) {
+      this.logger.log(`No pending contracts to send`);
+      return;
     }
 
     const dcConstracts = await Promise.all(
@@ -165,15 +170,8 @@ export class StatsService {
         taxAmount: await decryptNumber(c.taxAmount),
       })),
     );
-    const pendingContracts = user.contracts.filter(
-      (c) => c.status === 'pending',
-    );
-    if (pendingContracts.length === 0) {
-      this.logger.log(`No pending contracts to send for ${userId}`);
-      return;
-    }
 
-    for (const contract of pendingContracts) {
+    for (const contract of dcConstracts) {
       this.logger.log(
         `Sending contract to ${userId}: Amount ${contract.amount}`,
       );
