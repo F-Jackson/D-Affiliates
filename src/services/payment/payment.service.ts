@@ -1,20 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { StatsCalculationService } from './stats-calculation.service';
 import { ContractConfirmationService } from './contract-confirmation.service';
 import { TransferManagementService } from './transfer-management.service';
 
-/**
- * PaymentService - Orquestrador principal de operações de pagamento
- *
- * Coordena as operações dos serviços especializados:
- * - StatsCalculationService: Cálculo e atualização de estatísticas
- * - ContractConfirmationService: Confirmação de contratos
- * - TransferManagementService: Gerenciamento de transferências
- */
 @Injectable()
 export class PaymentService {
-  private readonly logger = new Logger(PaymentService.name);
-
   constructor(
     private readonly statsCalculationService: StatsCalculationService,
     private readonly contractConfirmationService: ContractConfirmationService,

@@ -4,7 +4,6 @@ import {
   BadRequestException,
   ConflictException,
   NotFoundException,
-  Inject,
   OnModuleInit,
 } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
@@ -55,7 +54,7 @@ export class AffiliateSyncService implements OnModuleInit {
       });
       if (alreadyAffiliated) {
         throw new ConflictException(
-          `User ${userId} is already affiliated with another code`,
+          `User is already affiliated with another code`,
         );
       }
 
@@ -63,7 +62,7 @@ export class AffiliateSyncService implements OnModuleInit {
         where: { affiliateCode: await encrypt(affiliateCode, false, 'sha3') },
       });
       if (!user) {
-        throw new NotFoundException(`User ${userId} not found`);
+        throw new NotFoundException(`User not found`);
       }
 
       const newAff = affRepo.create({
@@ -72,9 +71,9 @@ export class AffiliateSyncService implements OnModuleInit {
       });
 
       await affRepo.save(newAff);
-      this.logger.log(`Affiliate ${userId} synced`);
+      this.logger.log(`Affiliate synced`);
     } catch (error) {
-      this.logger.error(`Error syncing affiliate ${userId}:`, error.message);
+      this.logger.error(`Error syncing affiliate`, error.message);
       throw error;
     }
   }
@@ -94,7 +93,7 @@ export class AffiliateSyncService implements OnModuleInit {
       where: { userId: await encrypt(userId, false, 'sha3') },
     });
     if (!user) {
-      throw new NotFoundException(`User ${userId} not found`);
+      throw new NotFoundException(`User not found`);
     }
 
     try {
@@ -194,13 +193,10 @@ export class AffiliateSyncService implements OnModuleInit {
       );
       const savedUser = await userRepo.save(user);
 
-      this.logger.log(`Transfers synced for ${userId}`);
+      this.logger.log(`Transfers synced`);
       return savedUser;
     } catch (error) {
-      this.logger.error(
-        `Error syncing transfers for ${userId}:`,
-        error.message,
-      );
+      this.logger.error(`Error syncing transfers`, error.message);
 
       user.transferSyncStatus = await encrypt(
         ENUM_TRANSFER_SYNC_STATUS[3],

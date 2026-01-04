@@ -52,7 +52,7 @@ export class ContractConfirmationService {
       });
 
       if (!user) {
-        throw new NotFoundException(`User ${userId} not found`);
+        throw new NotFoundException(`User not found`);
       }
 
       if (user.contracts.length === 0) {
@@ -66,7 +66,7 @@ export class ContractConfirmationService {
 
       if (!contract) {
         throw new NotFoundException(
-          `Contract ${contractId} not found for user ${userId}`,
+          `Contract ${contractId} not found for user`,
         );
       }
 
@@ -103,13 +103,10 @@ export class ContractConfirmationService {
       user.transfers.push(newTransfer as any);
 
       await userRepo.save(user);
-      this.logger.log(`Contract confirmed for ${userId}`);
+      this.logger.log(`Contract confirmed`);
       return user;
     } catch (error) {
-      this.logger.error(
-        `Error confirming contract for ${userId}:`,
-        error.message,
-      );
+      this.logger.error(`Error confirming contract`, error.message);
       throw error;
     }
   }
@@ -135,7 +132,7 @@ export class ContractConfirmationService {
       });
 
       if (!user) {
-        throw new NotFoundException(`User ${userId} not found`);
+        throw new NotFoundException(`User not found`);
       }
 
       const encryptedContractId2 = await encrypt(contractId, false, 'sha3');
@@ -145,7 +142,7 @@ export class ContractConfirmationService {
 
       if (!contract) {
         throw new NotFoundException(
-          `Contract ${contractId} not found for user ${userId}`,
+          `Contract ${contractId} not found for user`,
         );
       }
 
@@ -159,11 +156,11 @@ export class ContractConfirmationService {
       contract.taxAmount = await encrypt(taxAmount, false, 'sha3');
 
       await userRepo.save(user);
-      this.logger.log(`Contract confirmed for ${userId} by admin`);
+      this.logger.log(`Contract confirmed for by admin`);
       return user;
     } catch (error) {
       this.logger.error(
-        `Error confirming contract for ${userId} by admin:`,
+        `Error confirming contract for by admin`,
         error.message,
       );
       throw error;

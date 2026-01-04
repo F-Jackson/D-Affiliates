@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { StatsEntity } from 'src/entities/stats.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import {
   decrypt,
@@ -25,7 +26,7 @@ export class StatsMapperService {
     };
   }
 
-  private async mapStats(stats: any, isAdmin = false) {
+  private async mapStats(stats: StatsEntity, isAdmin = false) {
     return {
       numberOfAffiliates: await decryptNumber(stats.numberOfAffiliates),
       pendingWithdrawals: await decryptNumber(stats.pendingWithdrawals),

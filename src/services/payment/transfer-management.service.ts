@@ -50,7 +50,7 @@ export class TransferManagementService {
       });
 
       if (!user) {
-        throw new NotFoundException(`User ${userId} not found`);
+        throw new NotFoundException(`User not found`);
       }
 
       const transfer = user.transfers.find(
@@ -59,7 +59,7 @@ export class TransferManagementService {
 
       if (!transfer) {
         throw new NotFoundException(
-          `Transfer ${transferId} not found for user ${userId}`,
+          `Transfer ${transferId} not found for user`,
         );
       }
 
@@ -96,13 +96,10 @@ export class TransferManagementService {
       }
 
       await userRepo.save(user);
-      this.logger.log(`Transfer ${transferId} updated for user ${userId}`);
+      this.logger.log(`Transfer ${transferId} updated for user`);
       return user;
     } catch (error) {
-      this.logger.error(
-        `Error updating transfer for ${userId}:`,
-        error.message,
-      );
+      this.logger.error(`Error updating transfer`, error.message);
       throw error;
     }
   }

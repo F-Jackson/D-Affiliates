@@ -52,7 +52,12 @@ export class StatsCalculationService {
       if (aff.transactions) {
         for (const t of aff.transactions) {
           const decryptedAmount = await decryptNumber(t.amount);
-          totalEarnings += decryptedAmount || 0;
+          const decryptedDirection = await decryptString(t.direction);
+
+          totalEarnings +=
+            decryptedDirection === 'in'
+              ? decryptedAmount || 0
+              : (decryptedAmount || 0) * -1;
         }
       }
     }

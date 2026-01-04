@@ -67,17 +67,12 @@ export class ContractManagementService {
       );
 
       for (const contract of decryptedContracts) {
-        this.logger.log(
-          `Sending contract to ${userId}: Amount ${contract.amount}`,
-        );
+        this.logger.log(`Sending contract Amount ${contract.amount}`);
       }
 
       return decryptedContracts;
     } catch (error) {
-      this.logger.error(
-        `Error sending contracts for ${userId}:`,
-        error.message,
-      );
+      this.logger.error(`Error sending contracts`, error.message);
       throw error;
     }
   }
@@ -99,7 +94,7 @@ export class ContractManagementService {
       });
 
       if (!user) {
-        throw new NotFoundException(`User ${userId} not found`);
+        throw new NotFoundException(`User not found`);
       }
 
       // Validate user status
@@ -141,16 +136,11 @@ export class ContractManagementService {
       const contractEntity = contractsRepo.create(newContract);
       await contractsRepo.save(contractEntity);
 
-      this.logger.log(
-        `Contract created for ${userId} with amount ${earnedAmount}`,
-      );
+      this.logger.log(`Contract created with amount ${earnedAmount}`);
 
       return contractEntity;
     } catch (error) {
-      this.logger.error(
-        `Error creating contract for ${userId}:`,
-        error.message,
-      );
+      this.logger.error(`Error creating contract`, error.message);
       throw error;
     }
   }

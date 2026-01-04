@@ -1,20 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AffiliateSyncService } from './affiliate-sync.service';
 import { AffiliateListService } from './affiliate-list.service';
 
-/**
- * AffiliateService - Orquestrador principal de operações de afiliados
- *
- * Coordena as operações dos serviços especializados:
- * - UserService: Gerenciamento de usuários
- * - AffiliateSyncService: Sincronização de afiliados e transferências
- * - AffiliateListService: Listagem de afiliados
- */
 @Injectable()
 export class AffiliateService {
-  private readonly logger = new Logger(AffiliateService.name);
-
   constructor(
     private readonly userService: UserService,
     private readonly affiliateSyncService: AffiliateSyncService,

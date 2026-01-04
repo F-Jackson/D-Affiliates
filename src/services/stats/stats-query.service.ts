@@ -44,7 +44,7 @@ export class StatsQueryService {
 
       return await this.statsMapperService.mapStatsResponse(user, false);
     } catch (error) {
-      this.logger.error(`Error getting stats for ${userId}:`, error.message);
+      this.logger.error(`Error getting stats`, error.message);
       throw error;
     }
   }
@@ -63,15 +63,12 @@ export class StatsQueryService {
         where: { userId: await encrypt(userId, false, 'sha3') },
       });
       if (!user) {
-        throw new NotFoundException(`User ${userId} not found`);
+        throw new NotFoundException(`User not found`);
       }
 
       return await this.statsMapperService.mapStatsResponse(user, true);
     } catch (error) {
-      this.logger.error(
-        `Error getting admin stats for ${userId}:`,
-        error.message,
-      );
+      this.logger.error(`Error getting admin stats`, error.message);
       throw error;
     }
   }

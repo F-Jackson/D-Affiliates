@@ -3,7 +3,6 @@ import {
   Logger,
   BadRequestException,
   ConflictException,
-  Inject,
 } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
@@ -112,10 +111,10 @@ export class UserService {
 
       await statsRepo.save(newStats);
       const savedUser = await userRepo.save(newUser);
-      this.logger.log(`New user registered: ${userId} (${country})`);
+      this.logger.log(`New user registered (${country})`);
       return savedUser;
     } catch (error) {
-      this.logger.error(`Error registering user ${userId}:`, error.message);
+      this.logger.error(`Error registering user`, error.message);
       throw error;
     }
   }
