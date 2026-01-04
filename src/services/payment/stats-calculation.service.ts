@@ -37,7 +37,7 @@ export class StatsCalculationService {
 
     const now = new Date();
     const nextPaymentDate = user.nextPayment
-      ? new Date(await decryptNumber(user.nextPayment) || 0)
+      ? new Date((await decryptNumber(user.nextPayment)) || 0)
       : null;
 
     if (nextPaymentDate && nextPaymentDate > now) {

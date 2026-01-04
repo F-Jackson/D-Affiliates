@@ -10,10 +10,7 @@ import {
   Transactional,
 } from 'src/common/transactional.decorator';
 import { UserEntity } from 'src/entities/user.entity';
-import {
-  decryptString,
-  encrypt,
-} from 'src/security/aes/encrypt.util';
+import { decryptString, encrypt } from 'src/security/aes/encrypt.util';
 import { DataSource } from 'typeorm';
 
 @Injectable()

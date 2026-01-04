@@ -85,8 +85,8 @@ export class ContractConfirmationService {
       contract.confirmedAt = await encrypt(new Date(), false, 'sha3');
 
       // Create transfer record
-      const contractAmount = await decryptNumber(contract.amount) || 0;
-      const contractTaxAmount = await decryptNumber(contract.taxAmount) || 0;
+      const contractAmount = (await decryptNumber(contract.amount)) || 0;
+      const contractTaxAmount = (await decryptNumber(contract.taxAmount)) || 0;
       const transferAmount = contractAmount - contractTaxAmount;
 
       const newTransfer = {
