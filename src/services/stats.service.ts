@@ -178,29 +178,41 @@ export class StatsService {
     }
   }
 
+  @Transactional({ isolationLevel: 'READ COMMITTED' })
   async adminMakeContract(userId: string) {
+    const manager = getTransactionManager(this);
+    const userRepo = manager.getRepository(UserEntity);
+
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId is required');
     }
 
     try {
-      const user = await this.userModel.findOne({ userId });
+      const user = await userRepo.findOne({
+        where: { userId: await encrypt(userId, false, 'sha3') },
+        relations: ['stats', 'contracts'],
+      });
       if (!user) {
         throw new NotFoundException(`User ${userId} not found`);
       }
 
-      if (user.status === 'banned') {
+      const status = await decryptString(user.status);
+
+      if (status === 'banned') {
         throw new UnauthorizedException('Banned user cannot make a contract');
       }
 
-      if (user.status === 'suspended') {
+      if (status === 'suspended') {
         throw new UnauthorizedException(
           'Suspended user cannot make a contract',
         );
       }
 
       // Check if there are available earnings
-      const earnedAmount = user.stats?.totalEarningsLastMonth || 0;
+      const earnedAmount = user.stats.totalEarningsLastMonth
+        ? await decryptNumber(user.stats.totalEarningsLastMonth) || 0
+        : 0;
+
       if (earnedAmount <= 0) {
         throw new BadRequestException(
           'No earnings available to create contract',
