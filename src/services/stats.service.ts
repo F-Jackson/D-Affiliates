@@ -32,60 +32,83 @@ export class StatsService {
   ) {}
 
   private async mapGet(user: UserEntity, isAdmin = false) {
-      const stats = user.stats;
-
+    const stats = user.stats;
 
     const result = {
-        affiliateCode: await decryptString(user.affiliateCode),
+      affiliateCode: await decryptString(user.affiliateCode),
 
-        status: await decryptString(user.status),
+      status: await decryptString(user.status),
 
-        numberOfAffiliates: user.affiliateds.length,
+      numberOfAffiliates: user.affiliateds.length,
 
-        stats: {
-          ...stats,
-          numberOfAffiliates: await decryptNumber(stats.numberOfAffiliates),
-          pendingWithdrawals: await decryptNumber(stats.pendingWithdrawals),
-          totalEarnings: await decryptNumber(stats.totalEarnings),
-          totalEarningsLastMonth: await decryptNumber(
-            stats.totalEarningsLastMonth,
-          ),
-          totalWithdrawn: await decryptNumber(stats.totalWithdrawn),
-        },
-
-        transfers: await Promise.all(
-          user.transfers.map(async (t) => ({
-            ...t,
-            amount: await decryptNumber(t.amount),
-            status: await decryptString(t.status),
-            failureReason: await decryptString(t.failureReason),
-            details: await decryptString(t.details),
-            internalPaymentProofUrl: await decryptString(
-              t.internalPaymentProofUrl,
-            ),
-            completedDate: t.completedDate
-              ? new Date(await decrypt(t.completedDate))
-              : undefined,
-          })),
+      stats: {
+        numberOfAffiliates: await decryptNumber(stats.numberOfAffiliates),
+        pendingWithdrawals: await decryptNumber(stats.pendingWithdrawals),
+        totalEarnings: await decryptNumber(stats.totalEarnings),
+        totalEarningsLastMonth: await decryptNumber(
+          stats.totalEarningsLastMonth,
         ),
-
-        nextPayment: user.nextPayment
-          ? new Date(await decrypt(user.nextPayment))
+        totalWithdrawn: await decryptNumber(stats.totalWithdrawn),
+        id: isAdmin ? stats.id : undefined,
+        usedTransactionIds: isAdmin
+          ? JSON.parse((await decryptString(stats.usedTransactionIds)) || '[]')
           : undefined,
-
-        constracts: await Promise.all(
-          user.contracts.map(async (c) => ({
-            contractId: await decryptString(c.contractId),
-            status: await decryptString(c.status),
-            amount: await decryptNumber(c.amount),
-            confirmedAt: await decryptDate(c.confirmedAt),
-            plataform: await decryptString(c.plataform),
-            taxAmount: await decryptNumber(c.taxAmount),
-          })),
+        totalTransactionsLastMonth: await decryptNumber(
+          stats.totalTransactionsLastMonth,
         ),
-      };
+        createdAt: stats.createdAt,
+        updatedAt: stats.updatedAt,
+      },
 
-      return result;
+      transfers: await Promise.all(
+        user.transfers.map(async (t) => ({
+          amount: await decryptNumber(t.amount),
+          status: await decryptString(t.status),
+          failureReason: await decryptString(t.failureReason),
+          details: await decryptString(t.details),
+          internalPaymentProofUrl: await decryptString(
+            t.internalPaymentProofUrl,
+          ),
+          completedDate: t.completedDate
+            ? new Date(await decrypt(t.completedDate))
+            : undefined,
+          createdAt: t.createdAt,
+          updatedAt: t.updatedAt,
+          id: isAdmin ? t.id : undefined,
+          usedTransactionIds: isAdmin
+            ? JSON.parse((await decryptString(t.usedTransactionIds)) || '[]')
+            : undefined,
+          paymentProofUrl: isAdmin
+            ? await decryptString(t.paymentProofUrl)
+            : undefined,
+          paymentStr: isAdmin ? await decryptString(t.paymentStr) : undefined,
+        })),
+      ),
+
+      nextPayment: user.nextPayment
+        ? new Date(await decrypt(user.nextPayment))
+        : undefined,
+
+      constracts: await Promise.all(
+        user.contracts.map(async (c) => ({
+          contractId: await decryptString(c.contractId),
+          status: await decryptString(c.status),
+          amount: await decryptNumber(c.amount),
+          confirmedAt: await decryptDate(c.confirmedAt),
+          plataform: await decryptString(c.plataform),
+          taxAmount: await decryptNumber(c.taxAmount),
+          id: isAdmin ? c.id : undefined,
+          secretCode: isAdmin ? await decryptString(c.secretCode) : undefined,
+          transcationsIds: isAdmin
+            ? JSON.parse((await decryptString(c.transcationsIds)) || '[]')
+            : undefined,
+          createdAt: isAdmin ? c.createdAt : undefined,
+          updatedAt: isAdmin ? c.updatedAt : undefined,
+        })),
+      ),
+    };
+
+    return result;
   }
 
   @Transactional({ isolationLevel: 'READ COMMITTED' })
@@ -216,7 +239,7 @@ export class StatsService {
 
       // Check if there are available earnings
       const earnedAmount = user.stats.totalEarningsLastMonth
-        ? await decryptNumber(user.stats.totalEarningsLastMonth) || 0
+        ? (await decryptNumber(user.stats.totalEarningsLastMonth)) || 0
         : 0;
 
       if (earnedAmount <= 0) {
@@ -247,8 +270,16 @@ export class StatsService {
         contractId: await encrypt(cdId, false, 'sha3'),
         status: await encrypt('pending', false, 'sha3'),
         amount: await encrypt(earnedAmount, false, 'sha3'),
-        secretCode: await encrypt(crypto.randomBytes(4).toString('hex').toUpperCase(), false, 'sha3'),
-        transcationsIds: user.stats.usedTransactionIds ? JSON.parse(await decryptString(user.stats.usedTransactionIds) || '[]') : [],
+        secretCode: await encrypt(
+          crypto.randomBytes(4).toString('hex').toUpperCase(),
+          false,
+          'sha3',
+        ),
+        transcationsIds: user.stats.usedTransactionIds
+          ? JSON.parse(
+              (await decryptString(user.stats.usedTransactionIds)) || '[]',
+            )
+          : [],
       };
 
       const contractEntity = contractsRepo.create(newContract);
