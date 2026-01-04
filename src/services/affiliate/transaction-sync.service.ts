@@ -65,7 +65,10 @@ export class TransactionSyncService implements OnModuleInit {
             type: tx.type || '',
             direction: tx.direction || '',
             product_name: tx.product_name,
-            commission_rate: typeof tx.commission_rate === 'number' ? tx.commission_rate : undefined,
+            commission_rate:
+              typeof tx.commission_rate === 'number'
+                ? tx.commission_rate
+                : undefined,
           })),
         );
       }
