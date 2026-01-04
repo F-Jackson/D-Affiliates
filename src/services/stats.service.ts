@@ -31,54 +31,11 @@ export class StatsService {
     protected readonly dataSource: DataSource,
   ) {}
 
-  @Transactional({ isolationLevel: 'READ COMMITTED' })
-  async adminGetAffiliatedStats(userId: string) {
-    const manager = getTransactionManager(this);
-    const userRepo = manager.getRepository(UserEntity);
-
-    if (!userId || userId.trim().length === 0) {
-      throw new BadRequestException('userId is required');
-    }
-
-    try {
-      const user = await userRepo.findOne({
-        where: { userId: await encrypt(userId, false, 'sha3') },
-      });
-      if (!user) {
-        throw new NotFoundException(`User ${userId} not found`);
-      }
-
-      return user;
-    } catch (error) {
-      this.logger.error(
-        `Error getting admin stats for ${userId}:`,
-        error.message,
-      );
-      throw error;
-    }
-  }
-
-  @Transactional({ isolationLevel: 'READ COMMITTED' })
-  async getAffiliatedStats(userId: string) {
-    const manager = getTransactionManager(this);
-    const userRepo = manager.getRepository(UserEntity);
-
-    if (!userId || userId.trim().length === 0) {
-      throw new BadRequestException('userId is required');
-    }
-
-    try {
-      const user = await userRepo.findOne({
-        where: { userId: await encrypt(userId, false, 'sha3') },
-        relations: ['stats', 'transfers', 'constracts'],
-      });
-      if (!user) {
-        throw new NotFoundException(`User ${userId} not found`);
-      }
-
+  private async mapGet(user: UserEntity, isAdmin = false) {
       const stats = user.stats;
 
-      const result = {
+
+    const result = {
         affiliateCode: await decryptString(user.affiliateCode),
 
         status: await decryptString(user.status),
@@ -129,6 +86,54 @@ export class StatsService {
       };
 
       return result;
+  }
+
+  @Transactional({ isolationLevel: 'READ COMMITTED' })
+  async adminGetAffiliatedStats(userId: string) {
+    const manager = getTransactionManager(this);
+    const userRepo = manager.getRepository(UserEntity);
+
+    if (!userId || userId.trim().length === 0) {
+      throw new BadRequestException('userId is required');
+    }
+
+    try {
+      const user = await userRepo.findOne({
+        where: { userId: await encrypt(userId, false, 'sha3') },
+      });
+      if (!user) {
+        throw new NotFoundException(`User ${userId} not found`);
+      }
+
+      return await this.mapGet(user, true);
+    } catch (error) {
+      this.logger.error(
+        `Error getting admin stats for ${userId}:`,
+        error.message,
+      );
+      throw error;
+    }
+  }
+
+  @Transactional({ isolationLevel: 'READ COMMITTED' })
+  async getAffiliatedStats(userId: string) {
+    const manager = getTransactionManager(this);
+    const userRepo = manager.getRepository(UserEntity);
+
+    if (!userId || userId.trim().length === 0) {
+      throw new BadRequestException('userId is required');
+    }
+
+    try {
+      const user = await userRepo.findOne({
+        where: { userId: await encrypt(userId, false, 'sha3') },
+        relations: ['stats', 'transfers', 'constracts'],
+      });
+      if (!user) {
+        throw new NotFoundException(`User ${userId} not found`);
+      }
+
+      return await this.mapGet(user);
     } catch (error) {
       this.logger.error(`Error getting stats for ${userId}:`, error.message);
       throw error;
