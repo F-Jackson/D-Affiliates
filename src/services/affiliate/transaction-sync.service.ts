@@ -3,11 +3,11 @@ import type { ClientGrpc } from '@nestjs/microservices';
 import { Metadata } from '@grpc/grpc-js';
 import { ConfigService } from '@nestjs/config';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  ExternalTransfer,
+import type {
   GetUserTransfersRequest,
   GetUserTransfersResponse,
-} from 'src/proto/service_affiliates.proto';
+} from 'src/proto';
+import { ExternalTransfer } from 'src/proto/service_affiliates.proto';
 
 export interface AffiliatesGrpcClient {
   GetUserTransfers(
@@ -55,12 +55,20 @@ export class TransactionSyncService implements OnModuleInit {
         this.createMetadata(),
       );
 
-      allTransfers.push(
-        ...response.transfers.map((tx) => ({
-          ...tx,
-          userId: affiliateId,
-        })),
-      );
+      if (response.transfers) {
+        allTransfers.push(
+          ...response.transfers.map((tx) => ({
+            id: tx.id || '',
+            userId: affiliateId,
+            amount: typeof tx.amount === 'number' ? tx.amount : 0,
+            created_at: typeof tx.created_at === 'number' ? tx.created_at : 0,
+            type: tx.type || '',
+            direction: tx.direction || '',
+            product_name: tx.product_name,
+            commission_rate: typeof tx.commission_rate === 'number' ? tx.commission_rate : undefined,
+          })),
+        );
+      }
     }
 
     return allTransfers;

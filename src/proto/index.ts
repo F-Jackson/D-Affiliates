@@ -60,3 +60,22 @@ export type {
 export type { Stats, Stats__Output } from './affiliates/Stats';
 export type { Transfer, Transfer__Output } from './affiliates/Transfer';
 export type { Contract, Contract__Output } from './affiliates/Contract';
+
+// Services Affiliates Types
+export type {
+  GetUserTransfersRequest,
+  GetUserTransfersRequest__Output,
+} from './services_affiliates/GetUserTransfersRequest';
+export type {
+  GetUserTransfersResponse,
+  GetUserTransfersResponse__Output,
+} from './services_affiliates/GetUserTransfersResponse';
+export type {
+  Transfer as ServiceTransfer,
+  Transfer__Output as ServiceTransfer__Output,
+} from './services_affiliates/Transfer';
+
+// Legacy types for backwards compatibility
+export type {
+  ExternalTransfer,
+} from './service_affiliates.proto';
