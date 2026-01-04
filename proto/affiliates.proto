@@ -65,7 +65,7 @@ message Stats {
   double pending_withdrawals = 3;
   int32 number_of_affiliates = 4;
   double total_earnings_last_month = 5;
-  google.protobuf.Timestamp updated_at = 6;
+  int64 updated_at = 6;
 }
 
 message Transfer {
@@ -73,7 +73,7 @@ message Transfer {
   string status = 2;
   optional string failure_reason = 3;
   optional string details = 4;
-  optional google.protobuf.Timestamp completed_date = 5;
+  optional int64 completed_date = 5;
   optional string internal_payment_proof_url = 6;
   optional string payment_method = 7;
   optional string transfer_id = 8;
@@ -85,7 +85,7 @@ message Contract {
   string contract_id = 1;
   string status = 2;
   double amount = 3;
-  google.protobuf.Timestamp confirmed_at = 4;
+  int64 confirmed_at = 4;
   string platform = 5;
   double tax_amount = 6;
   repeated string transaction_ids = 7;
@@ -120,7 +120,7 @@ message AffiliatedStatsResponse {
   string status = 4;
   Stats stats = 5;
   repeated Transfer transfers = 6;
-  google.protobuf.Timestamp next_payment = 7;
+  int64 next_payment = 7;
   repeated Contract contracts = 8;
   int32 number_of_affiliates = 9;
 }

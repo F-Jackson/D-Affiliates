@@ -59,7 +59,7 @@ export interface Stats {
   pendingWithdrawals: number;
   numberOfAffiliates: number;
   totalEarningsLastMonth: number;
-  updatedAt?: Date;
+  updatedAt?: number;
 }
 
 export interface Transfer {
@@ -92,7 +92,7 @@ export interface AffiliatedStatsResponse {
   status?: string;
   stats?: Stats;
   transfers?: Transfer[];
-  nextPayment?: Date;
+  nextPayment?: number;
   contracts?: Contract[];
   numberOfAffiliates?: number;
 }
