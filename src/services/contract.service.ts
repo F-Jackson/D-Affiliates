@@ -4,13 +4,21 @@ import PDFDocument from 'pdfkit';
 import { readFileSync } from 'fs';
 import { SignPdf } from 'node-signpdf';
 import { P12Signer } from '@signpdf/signer-p12';
-import { ContractsEntity } from 'src/entities/contracts.entity';
 import { UserEntity } from 'src/entities/user.entity';
+import { decryptNumber, decryptString } from 'src/security/aes/encrypt.util';
 
 @Injectable()
 export class ContractService {
   async generateContractPdf(
-    contract: ContractsEntity,
+    contract: {
+    contractId: string | undefined;
+    status: string | undefined;
+    amount: number | undefined;
+    confirmedAt: Date | undefined;
+    plataform: string | undefined;
+    taxAmount: number | undefined;
+    transcationsIds: string[] | undefined
+},
     user: UserEntity,
     version: number,
   ): Promise<{ buffer: Buffer; pdfHash: string; hmac: string }> {
@@ -96,7 +104,15 @@ export class ContractService {
 
   private buildHeader(
     pdf: PDFKit.PDFDocument,
-    contract: ContractsEntity,
+    contract: {
+    contractId: string | undefined;
+    status: string | undefined;
+    amount: number | undefined;
+    confirmedAt: Date | undefined;
+    plataform: string | undefined;
+    taxAmount: number | undefined;
+    transcationsIds: string[] | undefined
+},
     version: number,
   ): void {
     pdf
@@ -150,7 +166,15 @@ export class ContractService {
 
   private buildOverviewInfo(
     pdf: PDFKit.PDFDocument,
-    contract: ContractsEntity,
+    contract: {
+    contractId: string | undefined;
+    status: string | undefined;
+    amount: number | undefined;
+    confirmedAt: Date | undefined;
+    plataform: string | undefined;
+    taxAmount: number | undefined;
+    transcationsIds: string[] | undefined
+},
     version: number,
   ): void {
     pdf.fontSize(11).font('Helvetica-Bold').text('OVERVIEW INFORMATION');
@@ -158,12 +182,14 @@ export class ContractService {
     const items = [
       ['Reference ID', contract.contractId],
       ['Version', version.toString()],
-      ['Total Amount', `$${contract.amount.toFixed(2)}`],
-      ['Status', contract.status.toUpperCase()],
+      ['Total Amount', `$${contract.amount?.toFixed(2)}`],
+      ['Status', contract.status?.toUpperCase()],
       ['Currency', 'USD'],
     ];
 
     items.forEach(([label, value]) => {
+      if (!value) return;
+
       pdf.fontSize(9).font('Helvetica-Bold').text(`${label}:`, { indent: 20 });
       pdf.fontSize(9).font('Helvetica').text(value, { indent: 40 });
     });
@@ -197,7 +223,15 @@ export class ContractService {
 
   private buildTransactions(
     pdf: PDFKit.PDFDocument,
-    contract: ContractsEntity,
+    contract: {
+    contractId: string | undefined;
+    status: string | undefined;
+    amount: number | undefined;
+    confirmedAt: Date | undefined;
+    plataform: string | undefined;
+    taxAmount: number | undefined;
+    transcationsIds: string[] | undefined
+},
     user: UserEntity,
   ): void {
     if (!contract.transcationsIds?.length) return;
@@ -213,7 +247,7 @@ export class ContractService {
         pdf
           .fontSize(9)
           .font('Helvetica')
-          .text(`${i + 1}. $${tx.amount.toFixed(2)} | ${tx.productName}`, {
+          .text(`${i + 1}. $${await decryptNumber(tx.amount)} | ${await decryptString(tx.productName)}`, {
             indent: 20,
           });
       }
@@ -247,7 +281,15 @@ Any modification invalidates the digital signature and integrity hashes.`,
 
   private buildInvisibleWatermark(
     pdf: PDFKit.PDFDocument,
-    contract: ContractsEntity,
+    contract: {
+    contractId: string | undefined;
+    status: string | undefined;
+    amount: number | undefined;
+    confirmedAt: Date | undefined;
+    plataform: string | undefined;
+    taxAmount: number | undefined;
+    transcationsIds: string[] | undefined
+},
     user: UserEntity,
   ): void {
     pdf.opacity(0.01);
@@ -268,7 +310,15 @@ Any modification invalidates the digital signature and integrity hashes.`,
 
   private buildIntegritySection(
     pdf: PDFKit.PDFDocument,
-    contract: ContractsEntity,
+    contract: {
+    contractId: string | undefined;
+    status: string | undefined;
+    amount: number | undefined;
+    confirmedAt: Date | undefined;
+    plataform: string | undefined;
+    taxAmount: number | undefined;
+    transcationsIds: string[] | undefined
+},
     user: UserEntity,
   ): void {
     const payload = {
