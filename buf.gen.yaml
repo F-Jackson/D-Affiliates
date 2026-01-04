@@ -1,0 +1,10 @@
+version: v1
+plugins:
+  - plugin: ts
+    out: src/proto
+    opt:
+      - "ts_proto_opt=outputJsonMethods=false"
+      - "ts_proto_opt=addGrpcMetadata=true"
+      - "ts_proto_opt=nestJs=true"
+      - "ts_proto_opt=snakeToCamel=true"
+      - "ts_proto_opt=lowerCaseServiceMethods=false"
