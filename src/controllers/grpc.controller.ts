@@ -169,13 +169,46 @@ export class AffiliatesController {
     }
 
     try {
-      const stats = await this.affiliatedService.getAffiliatedStats(
+      const statsData = await this.affiliatedService.getAffiliatedStats(
         request.userId,
       );
+      
       return {
         success: true,
         message: 'Stats retrieved successfully',
-        ...stats,
+        affiliateCode: statsData.affiliateCode,
+        status: statsData.status,
+        numberOfAffiliates: statsData.numberOfAffiliates,
+        stats: statsData.stats ? {
+          totalEarnings: statsData.stats.totalEarnings ?? 0,
+          totalWithdrawn: statsData.stats.totalWithdrawn ?? 0,
+          pendingWithdrawals: statsData.stats.pendingWithdrawals ?? 0,
+          numberOfAffiliates: statsData.stats.numberOfAffiliates ?? 0,
+          totalEarningsLastMonth: statsData.stats.totalEarningsLastMonth ?? 0,
+          updatedAt: statsData.stats.updatedAt,
+        } : undefined,
+        transfers: statsData.transfers?.map((t: any) => ({
+          amount: t.amount ?? 0,
+          status: (t.status as 'pending' | 'completed' | 'failed') ?? 'pending',
+          failureReason: t.failureReason,
+          details: t.details,
+          completedDate: t.completedDate,
+          internalPaymentProofUrl: t.internalPaymentProofUrl,
+          paymentMethod: t.paymentMethod,
+          transferId: t.transferId,
+          createdAt: t.createdAt,
+          paymentStr: t.paymentStr,
+        })),
+        nextPayment: statsData.nextPayment,
+        contracts: statsData.constracts?.map((c: any) => ({
+          contractId: c.contractId ?? '',
+          status: (c.status as 'pending' | 'confirmed' | 'suspended') ?? 'pending',
+          amount: c.amount ?? 0,
+          confirmedAt: c.confirmedAt,
+          platform: c.plataform,
+          taxAmount: c.taxAmount,
+          transactionIds: c.transcationsIds,
+        })),
       };
     } catch (error) {
       return {

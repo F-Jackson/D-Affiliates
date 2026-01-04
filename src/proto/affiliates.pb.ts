@@ -53,37 +53,48 @@ export interface SyncTransfersResponse {
   message: string;
 }
 
+export interface Stats {
+  totalEarnings: number;
+  totalWithdrawn: number;
+  pendingWithdrawals: number;
+  numberOfAffiliates: number;
+  totalEarningsLastMonth: number;
+  updatedAt?: Date;
+}
+
+export interface Transfer {
+  amount: number;
+  status: 'pending' | 'completed' | 'failed';
+  failureReason?: string;
+  details?: string;
+  completedDate?: Date;
+  internalPaymentProofUrl?: string;
+  paymentMethod?: string;
+  transferId?: string;
+  createdAt?: number;
+  paymentStr?: string;
+}
+
+export interface Contract {
+  contractId: string;
+  status: 'pending' | 'confirmed' | 'suspended';
+  amount: number;
+  confirmedAt?: Date;
+  platform?: string;
+  taxAmount?: number;
+  transactionIds?: string[];
+}
+
 export interface AffiliatedStatsResponse {
   success: boolean;
   message: string;
   affiliateCode?: string;
   status?: string;
-  stats?:
-    | {
-        totalEarnings: number | undefined;
-        totalWithdrawn: number | undefined;
-        pendingWithdrawals: number | undefined;
-        numberOfAffiliates: number | undefined;
-        totalEarningsLastMonth: number | undefined;
-      }
-    | undefined;
+  stats?: Stats;
+  transfers?: Transfer[];
+  nextPayment?: Date;
+  contracts?: Contract[];
   numberOfAffiliates?: number;
-  transfers?: {
-    amount: number;
-    status: 'pending' | 'completed' | 'failed';
-    failureReason: string | undefined;
-    details: string | undefined;
-    completedDate: Date | undefined;
-  }[];
-  nextPayment?: Date | undefined;
-  constracts?: {
-    contractId: string;
-    status: 'pending' | 'confirmed' | 'suspended';
-    amount: number;
-    confirmedAt: Date | undefined;
-    plataform: string | undefined;
-    taxAmount: number | undefined;
-  }[];
 }
 
 export interface PaymentResponse {
