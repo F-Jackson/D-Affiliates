@@ -47,9 +47,15 @@ export class PaymentService {
       return;
     }
 
-    const totalEarnings = user.affiliateds.reduce((sum, aff) => {
-      return sum + aff.transactions.reduce((s, t) => s + await decryptNumber(t.amount), 0);
-    }, 0);
+    let totalEarnings = 0;
+    for (const aff of user.affiliateds) {
+      if (aff.transactions) {
+        for (const t of aff.transactions) {
+          const decryptedAmount = await decryptNumber(t.amount);
+          totalEarnings += decryptedAmount || 0;
+        }
+      }
+    }
 
     // Total withdrawn and pending
     const totalWithdrawn = user.transfers
