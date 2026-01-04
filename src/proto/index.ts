@@ -1,4 +1,3 @@
-// Re-export all proto types
 export type {
   RegisterUserRequest,
   RegisterUserRequest__Output,
