@@ -13,7 +13,13 @@ import {
 } from 'src/common/transactional.decorator';
 import { ContractsEntity } from 'src/entities/contracts.entity';
 import { UserEntity } from 'src/entities/user.entity';
-import { decrypt, encrypt } from 'src/security/aes/encrypt.util';
+import {
+  decrypt,
+  decryptDate,
+  decryptNumber,
+  decryptString,
+  encrypt,
+} from 'src/security/aes/encrypt.util';
 import { DataSource } from 'typeorm';
 
 @Injectable()
@@ -115,7 +121,7 @@ export class StatsService {
             contractId: await decryptString(c.contractId),
             status: await decryptString(c.status),
             amount: await decryptNumber(c.amount),
-            confirmedAt: New Date(await decryptString(c.confirmedAt)),
+            confirmedAt: await decryptDate(c.confirmedAt),
             plataform: await decryptString(c.plataform),
             taxAmount: await decryptNumber(c.taxAmount),
           })),
@@ -139,23 +145,26 @@ export class StatsService {
     }
 
     const contracts = await contractsRepo.find({
-        where: { user: {userId: await encrypt(userId, false, 'sha3')} },
-        relations: ['user'],
-      });
+      where: {
+        user: { userId: await encrypt(userId, false, 'sha3') },
+        status: await encrypt('pending', false, 'sha3'),
+      },
+      relations: ['user'],
+    });
     if (!contracts) {
       throw new NotFoundException(`Contracts of: ${userId} not found`);
     }
 
     const dcConstracts = await Promise.all(
-          contracts.map(async (c) => ({
-            contractId: await decryptString(c.contractId),
-            status: await decryptString(c.status),
-            amount: await decryptNumber(c.amount),
-            confirmedAt: c.confirmedAt,
-            plataform: await decryptString(c.plataform),
-            taxAmount: await decryptNumber(c.taxAmount),
-          })),
-        );
+      contracts.map(async (c) => ({
+        contractId: await decryptString(c.contractId),
+        status: await decryptString(c.status),
+        amount: await decryptNumber(c.amount),
+        confirmedAt: await decryptDate(c.confirmedAt),
+        plataform: await decryptString(c.plataform),
+        taxAmount: await decryptNumber(c.taxAmount),
+      })),
+    );
     const pendingContracts = user.contracts.filter(
       (c) => c.status === 'pending',
     );
