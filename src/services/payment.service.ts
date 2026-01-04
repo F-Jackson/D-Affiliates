@@ -5,14 +5,28 @@ import {
   BadRequestException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { InjectDataSource } from '@nestjs/typeorm';
+import {
+  getTransactionManager,
+  Transactional,
+} from 'src/common/transactional.decorator';
+import { UserEntity } from 'src/entities/user.entity';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class PaymentService {
   private readonly logger = new Logger(PaymentService.name);
 
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectDataSource()
+    protected readonly dataSource: DataSource,
+  ) {}
 
+  @Transactional({ isolationLevel: 'READ COMMITTED' })
   async makeStatsPayment(userId: string) {
+    const manager = getTransactionManager(this);
+    const userRepo = manager.getRepository(UserEntity);
+
     const user = await this.userModel.findOne({ userId });
     if (!user) {
       throw new NotFoundException(`User ${userId} not found`);
@@ -84,12 +98,16 @@ export class PaymentService {
     await user.save();
   }
 
+  @Transactional({ isolationLevel: 'READ COMMITTED' })
   async confirmContract(
     userId: string,
     code: string,
     paymentStr: string,
     contractId: string,
   ) {
+    const manager = getTransactionManager(this);
+    const userRepo = manager.getRepository(UserEntity);
+
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId is required');
     }
@@ -148,12 +166,16 @@ export class PaymentService {
     }
   }
 
+  @Transactional({ isolationLevel: 'READ COMMITTED' })
   async adminConfirmContract(
     userId: string,
     contractId: string,
     platform: string,
     taxAmount: number,
   ) {
+    const manager = getTransactionManager(this);
+    const userRepo = manager.getRepository(UserEntity);
+
     if (!userId || userId.trim().length === 0) {
       throw new BadRequestException('userId is required');
     }
@@ -190,6 +212,7 @@ export class PaymentService {
     }
   }
 
+  @Transactional({ isolationLevel: 'READ COMMITTED' })
   async adminChangeTransfer(
     userId: string,
     transferId: string,
@@ -203,6 +226,9 @@ export class PaymentService {
       detail?: string;
     },
   ) {
+    const manager = getTransactionManager(this);
+    const userRepo = manager.getRepository(UserEntity);
+
     const user = await this.userModel.findOne({ userId });
     if (!user) {
       throw new NotFoundException(`User ${userId} not found`);
